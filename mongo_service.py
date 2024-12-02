@@ -112,22 +112,50 @@ class MongoService:
 
         return result 
 
-    def update_tips(self, date, cash_tips, credit_tips):
-        """Update tips for a specific date"""
-        try:
-            result = self.db.dailyEntries.update_one(
+    def upsert_tips(self, date, cash_tips, credit_tips):
+        """Update or insert tips for a specific date"""
+        # Get existing entry to calculate proportions
+        existing = self.db.dailyEntries.find_one({"date": date})
+        
+        if existing and existing.get("employees"):
+            total_hours = sum(emp["hours"] for emp in existing["employees"])
+            
+            # Calculate each employee's share based on their hours
+            updated_employees = []
+            for emp in existing["employees"]:
+                hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
+                emp_cash = round(cash_tips * hours_fraction, 2)
+                emp_credit = round(credit_tips * hours_fraction, 2)
+                
+                updated_employees.append({
+                    "name": emp["name"],
+                    "hours": emp["hours"],
+                    "cashTips": emp_cash,
+                    "creditTips": emp_credit,
+                    "compensation": emp.get("compensation", 0)
+                })
+            
+            # Update the entire document
+            return self.db.dailyEntries.update_one(
+                {"date": date},
+                {
+                    "$set": {
+                        "totalCashTips": cash_tips,
+                        "totalCreditTips": credit_tips,
+                        "employees": updated_employees
+                    }
+                },
+                upsert=True
+            )
+        else:
+            # If no existing entry, just set the totals
+            return self.db.dailyEntries.update_one(
                 {"date": date},
                 {
                     "$set": {
                         "totalCashTips": cash_tips,
                         "totalCreditTips": credit_tips
                     }
-                }
+                },
+                upsert=True
             )
-            
-            if result.matched_count == 0:
-                raise Exception("No entry found for this date")
-            
-            return {"status": "success"}
-        except Exception as e:
-            raise Exception(f"Failed to update tips: {str(e)}")

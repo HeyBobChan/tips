@@ -111,3 +111,23 @@ class MongoService:
                 result.append(emp_data)
 
         return result 
+
+    def update_tips(self, date, cash_tips, credit_tips):
+        """Update tips for a specific date"""
+        try:
+            result = self.db.dailyEntries.update_one(
+                {"date": date},
+                {
+                    "$set": {
+                        "totalCashTips": cash_tips,
+                        "totalCreditTips": credit_tips
+                    }
+                }
+            )
+            
+            if result.matched_count == 0:
+                raise Exception("No entry found for this date")
+            
+            return {"status": "success"}
+        except Exception as e:
+            raise Exception(f"Failed to update tips: {str(e)}")

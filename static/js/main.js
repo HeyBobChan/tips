@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   
   function renderApp(container) {
-    let currentView = 'entry';
+    let currentView = 'hours';
     let currentDate = new Date().toISOString().split('T')[0];
     let currentMonth = new Date().toISOString().slice(0, 7);
   
@@ -20,14 +20,16 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="bg-white shadow-lg rounded-lg">
             <!-- Tabs -->
             <div class="flex border-b">
-              ${renderTab('entry', 'New Entry / כניסה חדשה')}
+              ${renderTab('hours', 'Work Hours / שעות עבודה')}
+              ${renderTab('tips', 'Tips Entry / הכנסת טיפים')}
               ${renderTab('daily', 'Daily Summary / סיכום יומי')}
               ${renderTab('monthly', 'Monthly Summary / סיכום חודשי')}
             </div>
   
             <!-- Content -->
             <div class="p-6">
-              ${currentView === 'entry' ? renderEntryForm() :
+              ${currentView === 'hours' ? renderHoursForm() :
+                currentView === 'tips' ? renderTipsForm() :
                 currentView === 'daily' ? renderDailyView() :
                 renderMonthlyView()}
             </div>
@@ -51,9 +53,9 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
     }
   
-    function renderEntryForm() {
+    function renderHoursForm() {
       return `
-        <form id="entryForm" class="space-y-6">
+        <form id="hoursForm" class="space-y-6">
           <div class="grid grid-cols-1 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">שם העובד / Name *</label>
@@ -91,6 +93,27 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
   
             <div>
+              <button type="submit"
+                class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Submit Hours / שלח שעות
+              </button>
+            </div>
+          </div>
+        </form>
+      `;
+    }
+  
+    function renderTipsForm() {
+      return `
+        <form id="tipsForm" class="space-y-6">
+          <div class="grid grid-cols-1 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">תאריך / Date *</label>
+              <input type="date" name="date" required value="${currentDate}"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+  
+            <div>
               <label class="block text-sm font-medium text-gray-700">סה״כ טיפים במזומן / Total Cash Tips</label>
               <input type="number" name="cashTips" min="0" step="0.01"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -106,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <div>
             <button type="submit"
               class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-              Submit Entry / שלח כניסה
+              Submit Tips / שלח טיפים
             </button>
           </div>
         </form>
@@ -116,10 +139,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderDailyView() {
       return `
         <div class="space-y-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">בחר תאריך / Select Date</label>
-            <input type="date" id="dailyDate" value="${currentDate}"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <div class="flex justify-between items-center">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">בחר תאריך / Select Date</label>
+              <input type="date" id="dailyDate" value="${currentDate}"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <button id="downloadDailyCSV" 
+              class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+              Download CSV / הורד קובץ
+            </button>
           </div>
           <div id="dailyData" class="space-y-6">
             <!-- Data will be loaded here -->
@@ -132,10 +161,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderMonthlyView() {
       return `
         <div class="space-y-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">בחר חודש / Select Month</label>
-            <input type="month" id="monthSelect" value="${currentMonth}"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <div class="flex justify-between items-center">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">בחר חודש / Select Month</label>
+              <input type="month" id="monthSelect" value="${currentMonth}"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <button id="downloadMonthlyCSV" 
+              class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+              Download CSV / הורד קובץ
+            </button>
           </div>
           <div id="monthlyData" class="space-y-6">
             <!-- Data will be loaded here -->
@@ -154,10 +189,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
   
-      // Form submission
-      const form = document.getElementById('entryForm');
-      if (form) {
-        form.addEventListener('submit', handleSubmit);
+      // Hours form submission
+      const hoursForm = document.getElementById('hoursForm');
+      if (hoursForm) {
+        hoursForm.addEventListener('submit', handleHoursSubmit);
+      }
+  
+      // Tips form submission
+      const tipsForm = document.getElementById('tipsForm');
+      if (tipsForm) {
+        tipsForm.addEventListener('submit', handleTipsSubmit);
       }
   
       // Date selectors
@@ -180,18 +221,73 @@ document.addEventListener('DOMContentLoaded', function() {
       }
   
       // Add this: Populate worker select when on entry view
-      if (currentView === 'entry') {
+      if (currentView === 'hours') {
         populateWorkerSelect();
       }
+  
+      // Add download button handlers
+      const downloadDailyBtn = document.getElementById('downloadDailyCSV');
+      if (downloadDailyBtn) {
+        downloadDailyBtn.addEventListener('click', async () => {
+          try {
+            const response = await fetch(`/api/tips/daily/${currentDate}`);
+            if (!response.ok) throw new Error('Failed to load daily data');
+            const data = await response.json();
+            const csvContent = generateDailyCSV(data);
+            downloadCSV(`daily-summary-${currentDate}.csv`, csvContent);
+          } catch (error) {
+            alert('Error downloading CSV: ' + error.message);
+          }
+        });
+      }
+  
+      const downloadMonthlyBtn = document.getElementById('downloadMonthlyCSV');
+      if (downloadMonthlyBtn) {
+        downloadMonthlyBtn.addEventListener('click', async () => {
+          try {
+            const response = await fetch(`/api/tips/monthly/${currentMonth}`);
+            if (!response.ok) throw new Error('Failed to load monthly data');
+            const data = await response.json();
+            const csvContent = generateMonthlyCSV(data);
+            downloadCSV(`monthly-summary-${currentMonth}.csv`, csvContent);
+          } catch (error) {
+            alert('Error downloading CSV: ' + error.message);
+          }
+        });
+      }
+  
+      // Add date format handlers
+      document.querySelectorAll('input[type="date"]').forEach(dateInput => {
+        // On focus, show the date picker format (YYYY-MM-DD)
+        dateInput.addEventListener('focus', function() {
+          this.type = 'date';
+        });
+  
+        // On blur, show the formatted date (DD/MM/YYYY)
+        dateInput.addEventListener('blur', function() {
+          if (this.value) {
+            const date = new Date(this.value);
+            const displayDate = date.toLocaleDateString('en-GB');
+            this.setAttribute('data-display-value', displayDate);
+          }
+        });
+  
+        // Initial formatting if there's a value
+        if (dateInput.value) {
+          const date = new Date(dateInput.value);
+          const displayDate = date.toLocaleDateString('en-GB');
+          dateInput.setAttribute('data-display-value', displayDate);
+        }
+      });
     }
   
-    async function handleSubmit(e) {
+    async function handleHoursSubmit(e) {
       e.preventDefault();
       const formData = new FormData(e.target);
       const data = Object.fromEntries(formData.entries());
   
       try {
-        const response = await fetch('/api/tips/AddEntry', {
+        const response = await fetch('/api/tips/AddHours', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -199,12 +295,35 @@ document.addEventListener('DOMContentLoaded', function() {
           body: JSON.stringify(data),
         });
   
-        if (!response.ok) throw new Error('Failed to submit entry');
+        if (!response.ok) throw new Error('Failed to submit hours');
   
-        alert('Entry submitted successfully! / !הכניסה נשלח בהצלחה');
+        alert('Hours submitted successfully! / !השעות נשלחו בהצלחה');
         e.target.reset();
       } catch (error) {
-        alert('Error submitting entry: ' + error.message);
+        alert('Error submitting hours: ' + error.message);
+      }
+    }
+  
+    async function handleTipsSubmit(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+  
+      try {
+        const response = await fetch('/api/tips/AddTips', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+  
+        if (!response.ok) throw new Error('Failed to submit tips');
+  
+        alert('Tips submitted successfully! / !הטיפים נשלחו בהצלחה');
+        e.target.reset();
+      } catch (error) {
+        alert('Error submitting tips: ' + error.message);
       }
     }
   
@@ -326,54 +445,62 @@ document.addEventListener('DOMContentLoaded', function() {
       }));
 
       return `
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Employee / עובד
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hours / שעות
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Cash / מזומן
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Credit / אשראי
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Credit+Comp / אשראי+השלמה
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Final Total / סה״כ
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            ${safeEmployees.length > 0 ? 
-              safeEmployees.map(emp => {
-                const creditAndComp = emp.creditTips + emp.compensation;
-                return `
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-right">${emp.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right">${emp.hours.toFixed(2)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right">₪${emp.cashTips.toFixed(2)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right">₪${emp.creditTips.toFixed(2)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right">₪${creditAndComp.toFixed(2)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right font-medium">₪${emp.finalTotal.toFixed(2)}</td>
-                  </tr>
-                `;
-              }).join('')
-              : `
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Employee / עובד
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Hours / שעות
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Cash Tips / טיפים במזומן
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Credit Tips / טיפים באשראי
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Compensation / השלמה
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Avg Wage/Hour / שכר ממוצע לשעה
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total / סה״כ
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              ${data.employeeTotals.map(emp => `
                 <tr>
-                  <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
-                    No data available for this month / אין נתונים לחודש זה
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    ${emp.name}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    ${emp.hours.toFixed(2)}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    ₪${emp.cashTips.toFixed(2)}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    ₪${emp.creditTips.toFixed(2)}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    ₪${emp.compensation.toFixed(2)}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    ₪${emp.avgWagePerHour.toFixed(2)}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    ₪${emp.finalTotal.toFixed(2)}
                   </td>
                 </tr>
-              `
-            }
-          </tbody>
-        </table>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
       `;
     }
   
@@ -414,6 +541,109 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       } catch (error) {
         console.error('Error loading workers:', error);
+      }
+    }
+  
+    function generateDailyCSV(data) {
+      // Get all unique keys from employees, excluding internal/special fields
+      const employeeFields = data.employees.length > 0 
+        ? Object.keys(data.employees[0]).filter(key => !key.startsWith('_'))
+        : [];
+
+      // Create headers with both English and Hebrew labels
+      const headerLabels = {
+        name: 'Employee / עובד',
+        hours: 'Hours / שעות',
+        cashTips: 'Cash Tips / טיפים במזומן',
+        creditTips: 'Credit Tips / טיפים באשראי',
+        compensation: 'Compensation / השלמה',
+        finalTotal: 'Final Total / סה״כ'
+      };
+
+      // Create CSV header row
+      const headers = employeeFields.map(field => headerLabels[field] || field).join(',') + '\n';
+
+      // Create employee rows
+      const rows = data.employees.map(emp => 
+        employeeFields.map(field => {
+          const value = emp[field];
+          // Format numbers to 2 decimal places if numeric
+          return typeof value === 'number' ? value.toFixed(2) : value;
+        }).join(',')
+      ).join('\n');
+
+      // Create totals row if summary fields exist
+      const summaryFields = ['totalHours', 'totalCashTips', 'totalCreditTips', 'compensation'];
+      const hasSummary = summaryFields.some(field => field in data);
+      
+      let totals = '';
+      if (hasSummary) {
+        totals = '\nTotals / סה״כ,' + 
+          summaryFields.map(field => 
+            (data[field] || 0).toFixed(2)
+          ).join(',');
+      }
+
+      return headers + rows + totals;
+    }
+
+    function generateMonthlyCSV(data) {
+      if (!data?.employeeTotals?.length) {
+        return 'No data available / אין נתונים זמינים\n';
+      }
+
+      // Get all unique keys from employee totals
+      const employeeFields = Object.keys(data.employeeTotals[0]).filter(key => !key.startsWith('_'));
+
+      // Create headers with both English and Hebrew labels
+      const headerLabels = {
+        name: 'Employee / עובד',
+        hours: 'Hours / שעות',
+        cashTips: 'Cash Tips / טיפים במזומן',
+        creditTips: 'Credit Tips / טיפים באשראי',
+        compensation: 'Compensation / השלמה',
+        finalTotal: 'Final Total / סה״כ'
+      };
+
+      // Create CSV header row
+      const headers = employeeFields.map(field => headerLabels[field] || field).join(',') + '\n';
+
+      // Create employee rows
+      const rows = data.employeeTotals.map(emp => 
+        employeeFields.map(field => {
+          const value = emp[field];
+          // Format numbers to 2 decimal places if numeric
+          return typeof value === 'number' ? value.toFixed(2) : value;
+        }).join(',')
+      ).join('\n');
+
+      return headers + rows;
+    }
+
+    function downloadCSV(filename, csvContent) {
+      // Add BOM for proper UTF-8 encoding with Hebrew characters
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      
+      try {
+        // For modern browsers
+        if (window.navigator.msSaveOrOpenBlob) {
+          window.navigator.msSaveBlob(blob, filename);
+          return;
+        }
+
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url); // Clean up
+      } catch (error) {
+        console.error('Error downloading CSV:', error);
+        alert('Error downloading CSV. Please try again.');
       }
     }
   }

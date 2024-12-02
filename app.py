@@ -90,7 +90,6 @@ def get_daily_data(date):
             "totalCreditTips": round(total_credit_tips, 2),
             "totalTips": round(total_tips, 2),
             "avgTipsPerHour": avg_tips_per_hour,
-            "avgWagePerHour": round((total_tips + total_compensation) / total_hours if total_hours > 0 else 0, 2),
             "compensation": total_compensation,
             "employees": employees
         }
@@ -170,7 +169,6 @@ def get_monthly_data(month):
         for emp in employee_totals.values():
             emp["totalTips"] = round(emp["cashTips"] + emp["creditTips"], 2)
             emp["finalTotal"] = round(emp["totalTips"] + emp["compensation"], 2)
-            emp["avgWagePerHour"] = round(emp["finalTotal"] / emp["hours"] if emp["hours"] > 0 else 0, 2)
             emp["cashTips"] = round(emp["cashTips"], 2)
             emp["creditTips"] = round(emp["creditTips"], 2)
             emp["compensation"] = round(emp["compensation"], 2)
@@ -184,7 +182,6 @@ def get_monthly_data(month):
             "totalCashTips": round(monthly_total_cash, 2),
             "totalCreditTips": round(monthly_total_credit, 2),
             "totalCompensation": round(monthly_total_compensation, 2),
-            "avgWagePerHour": round((monthly_total_cash + monthly_total_credit + monthly_total_compensation) / monthly_total_hours if monthly_total_hours > 0 else 0, 2),
             "employeeTotals": employee_list
         }
         
@@ -241,7 +238,6 @@ def add_hours():
         
         # Convert date from YYYY-MM-DD to DD/MM/YYYY
         input_date = datetime.strptime(data['date'], '%Y-%m-%d')
-        formatted_date = input_date.strftime('%d/%m/%Y')
         
         # Calculate total hours from hours and minutes
         total_hours = float(data.get('hours', 0) or 0)
@@ -249,18 +245,15 @@ def add_hours():
         total_hours += minutes / 60
             
         # Format data for mongo_service
-        values = [
-            formatted_date,  # converted date
-            data['name'],
-            '',  # placeholder for any additional fields
-            total_hours,
-            0,  # Initialize cash tips as 0
-            0   # Initialize credit tips as 0
-        ]
+        employee_data = {
+            'name': data['name'],
+            'hours': total_hours,
+            'cashTips': 0,  # Initialize with 0
+            'creditTips': 0  # Initialize with 0
+        }
         
-        print(f"Formatted values: {values}")  # Debug log
-        result = mongo_service.append_entry(values)
-        return jsonify({"status": "success", "message": "Hours added successfully"})
+        result = mongo_service.upsert_employee_hours(input_date, employee_data)
+        return jsonify({"status": "success", "message": "Hours updated successfully"})
     except Exception as e:
         print(f"Error adding hours: {str(e)}")  # Debug log
         return jsonify({"status": "error", "message": str(e)}), 400
@@ -278,13 +271,8 @@ def add_tips():
         # Convert date from YYYY-MM-DD to DD/MM/YYYY
         input_date = datetime.strptime(data['date'], '%Y-%m-%d')
         
-        result = mongo_service.update_tips(
-            input_date,
-            cash_tips,
-            credit_tips
-        )
-        
-        return jsonify({"status": "success", "message": "Tips added successfully"})
+        result = mongo_service.upsert_tips(input_date, cash_tips, credit_tips)
+        return jsonify({"status": "success", "message": "Tips updated successfully"})
     except Exception as e:
         print(f"Error adding tips: {str(e)}")  # Debug log
         return jsonify({"status": "error", "message": str(e)}), 400

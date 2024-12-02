@@ -361,12 +361,14 @@ document.addEventListener('DOMContentLoaded', function() {
         totalCashTips: data?.totalCashTips || 0,
         totalCreditTips: data?.totalCreditTips || 0,
         avgTipsPerHour: data?.avgTipsPerHour || 0,
+        avgWagePerHour: data?.avgWagePerHour || 0,
         compensation: data?.compensation || 0,
-        employees: data?.employees || []
+        employees: data?.employees || [],
+        totalTips: (data?.totalCashTips || 0) + (data?.totalCreditTips || 0)
       };
 
       return `
-        <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-5 gap-4 mb-6">
           <div class="bg-gray-50 p-4 rounded-lg">
             <h3 class="font-semibold">Total Hours / סה״כ שעות</h3>
             <p class="text-2xl">${safeData.totalHours.toFixed(2)}</p>
@@ -382,6 +384,10 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="bg-gray-50 p-4 rounded-lg">
             <h3 class="font-semibold">Compensation / השלמה</h3>
             <p class="text-2xl">₪${safeData.compensation.toFixed(2)}</p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="font-semibold">Avg Per Hour / ממוצע לשעה</h3>
+            <p class="text-2xl">₪${safeData.avgWagePerHour.toFixed(2)}</p>
           </div>
         </div>
         <table class="min-w-full divide-y divide-gray-200">

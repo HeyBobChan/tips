@@ -3,28 +3,41 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 from restaurant_config import get_restaurant_config, get_mongodb_config
+from pymongo.errors import ConnectionFailure, OperationFailure
+from tenacity import retry, stop_after_attempt, wait_exponential
+from contextlib import contextmanager
 
 class MongoService:
-    def __init__(self, restaurant_id):
-        mongodb_config = get_mongodb_config()
-        if not mongodb_config['uri']:
-            raise ValueError("No MongoDB connection string found in environment variables")
-            
-        restaurant_config = get_restaurant_config(restaurant_id)
-        if not restaurant_config:
-            raise ValueError(f"Invalid restaurant ID: {restaurant_id}")
+    _instances = {}  # Class-level dictionary to store instances
+    _client = None   # Class-level shared client
+    _config = None   # Class-level config
 
-        try:
-            self.client = MongoClient(mongodb_config['uri'], serverSelectionTimeoutMS=5000)
-            self.client.server_info()
-            print(f"Successfully connected to MongoDB Atlas for {restaurant_config['name']}")
-            
-            self.db = self.client[mongodb_config['db_name']]
-            self.restaurant_id = restaurant_id
-            
-        except Exception as e:
-            print(f"Failed to connect to MongoDB Atlas: {str(e)}")
-            raise
+    @classmethod
+    def get_instance(cls, restaurant_id):
+        """Singleton pattern to reuse connections"""
+        if restaurant_id not in cls._instances:
+            cls._instances[restaurant_id] = cls(restaurant_id)
+        return cls._instances[restaurant_id]
+
+    def __init__(self, restaurant_id):
+        if not MongoService._client:
+            MongoService._config = get_mongodb_config()
+            if not MongoService._config['uri']:
+                raise ValueError("No MongoDB connection string found")
+                
+            # Initialize shared client with connection pooling
+            MongoService._client = MongoClient(
+                MongoService._config['uri'],
+                serverSelectionTimeoutMS=5000,
+                maxPoolSize=50,
+                minPoolSize=5,
+                maxIdleTimeMS=60000,
+                retryWrites=True
+            )
+        
+        self.client = MongoService._client
+        self.db = self.client[MongoService._config['db_name']]
+        self.restaurant_id = restaurant_id
 
     def get_collection_name(self, base_name):
         """Helper method to generate restaurant-specific collection names"""
@@ -173,47 +186,68 @@ class MongoService:
                 upsert=True
             )
 
-    def upsert_employee_hours(self, date, employee_data):
+    @contextmanager
+    def session_scope(self):
+        """Provide a transactional scope around a series of operations"""
+        session = None
+        try:
+            session = self.client.start_session()
+            yield session
+        except Exception as e:
+            if session:
+                session.abort_transaction()
+            raise
+        finally:
+            if session:
+                session.end_session()
+
+    def upsert_employee_hours(self, date, employee_data, session=None):
         """Update or insert employee hours for a specific date"""
-        # Try to find existing entry for this date
-        existing = self.db[self.get_collection_name('dailyEntries')].find_one({"date": date})
-        
-        if existing:
-            # Check if employee exists for this date
-            employee_exists = False
-            for emp in existing["employees"]:
-                if emp["name"] == employee_data["name"]:
-                    employee_exists = True
-                    break
+        try:
+            # Try to find existing entry for this date
+            existing = self.db[self.get_collection_name('dailyEntries')].find_one({"date": date})
             
-            if employee_exists:
-                # Update existing employee's hours
-                self.db[self.get_collection_name('dailyEntries')].update_one(
-                    {
-                        "date": date,
-                        "employees.name": employee_data["name"]
-                    },
-                    {
-                        "$set": {
-                            "employees.$.hours": employee_data["hours"]
-                        }
-                    }
-                )
+            if existing:
+                # Check if employee exists for this date
+                employee_exists = False
+                for emp in existing["employees"]:
+                    if emp["name"] == employee_data["name"]:
+                        employee_exists = True
+                        break
+                
+                if employee_exists:
+                    # Update existing employee's hours
+                    self.db[self.get_collection_name('dailyEntries')].update_one(
+                        {
+                            "date": date,
+                            "employees.name": employee_data["name"]
+                        },
+                        {
+                            "$set": {
+                                "employees.$.hours": employee_data["hours"]
+                            }
+                        },
+                        session=session
+                    )
+                else:
+                    # Add new employee to existing date
+                    self.db[self.get_collection_name('dailyEntries')].update_one(
+                        {"date": date},
+                        {"$push": {"employees": employee_data}},
+                        session=session
+                    )
             else:
-                # Add new employee to existing date
-                self.db[self.get_collection_name('dailyEntries')].update_one(
-                    {"date": date},
-                    {"$push": {"employees": employee_data}}
-                )
-        else:
-            # Create new entry
-            entry = {
-                "date": date,
-                "totalHours": employee_data["hours"],
-                "totalCashTips": 0,
-                "totalCreditTips": 0,
-                "employees": [employee_data]
-            }
-            self.db[self.get_collection_name('dailyEntries')].insert_one(entry)
-        
-        return {"status": "success"}
+                # Create new entry
+                entry = {
+                    "date": date,
+                    "totalHours": employee_data["hours"],
+                    "totalCashTips": 0,
+                    "totalCreditTips": 0,
+                    "employees": [employee_data]
+                }
+                self.db[self.get_collection_name('dailyEntries')].insert_one(entry, session=session)
+            
+            return {"status": "success"}
+        except Exception as e:
+            print(f"Error in upsert_employee_hours: {str(e)}")
+            raise

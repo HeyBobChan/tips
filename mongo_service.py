@@ -2,27 +2,34 @@ from pymongo import MongoClient
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+from restaurant_config import get_restaurant_config, get_mongodb_config
 
 class MongoService:
-    def __init__(self):
-        # Load environment variables
-        load_dotenv()
-        
-        # Get MongoDB connection string from environment variable
-        MONGODB_URI = os.getenv('MONGODB_URI')
-        if not MONGODB_URI:
+    def __init__(self, restaurant_id):
+        mongodb_config = get_mongodb_config()
+        if not mongodb_config['uri']:
             raise ValueError("No MongoDB connection string found in environment variables")
             
+        restaurant_config = get_restaurant_config(restaurant_id)
+        if not restaurant_config:
+            raise ValueError(f"Invalid restaurant ID: {restaurant_id}")
+
         try:
-            self.client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
-            # Test the connection
+            self.client = MongoClient(mongodb_config['uri'], serverSelectionTimeoutMS=5000)
             self.client.server_info()
-            print("Successfully connected to MongoDB Atlas")
-            self.db = self.client['tipsManagementDB']
+            print(f"Successfully connected to MongoDB Atlas for {restaurant_config['name']}")
+            
+            self.db = self.client[mongodb_config['db_name']]
+            self.restaurant_id = restaurant_id
+            
         except Exception as e:
             print(f"Failed to connect to MongoDB Atlas: {str(e)}")
             raise
-        
+
+    def get_collection_name(self, base_name):
+        """Helper method to generate restaurant-specific collection names"""
+        return f"{self.restaurant_id}_{base_name}"
+
     def append_entry(self, values):
         date_obj = datetime.strptime(values[0], '%d/%m/%Y')
         employee_name = values[1]
@@ -41,7 +48,7 @@ class MongoService:
         }
         
         # Try to find existing entry for this date
-        existing = self.db.dailyEntries.find_one({"date": date_obj})
+        existing = self.db[self.get_collection_name('dailyEntries')].find_one({"date": date_obj})
         
         if existing:
             # Check if employee exists for this date
@@ -53,7 +60,7 @@ class MongoService:
             
             if employee_exists:
                 # Update existing employee's data
-                self.db.dailyEntries.update_one(
+                self.db[self.get_collection_name('dailyEntries')].update_one(
                     {
                         "date": date_obj,
                         "employees.name": employee_name
@@ -66,25 +73,27 @@ class MongoService:
                 )
             else:
                 # Add new employee to existing date
-                self.db.dailyEntries.update_one(
+                self.db[self.get_collection_name('dailyEntries')].update_one(
                     {"date": date_obj},
                     {"$push": {"employees": entry["employees"][0]}}
                 )
         else:
             # Create new entry
-            self.db.dailyEntries.insert_one(entry)
+            self.db[self.get_collection_name('dailyEntries')].insert_one(entry)
             
         return {"status": "success"}
 
     def get_employees_for_date(self, date):
-        entry = self.db.dailyEntries.find_one({"date": date})
-        if not entry:
-            return []
-        return entry["employees"]
+        """Example of using restaurant-specific collection"""
+        collection = self.db[self.get_collection_name('dailyEntries')]
+        entry = collection.find_one({"date": date})
+        return entry['employees'] if entry else []
 
     def get_workers(self):
-        workers_doc = self.db.workers.find_one()
-        return workers_doc["workers"] if workers_doc else [] 
+        """Example of using restaurant-specific collection"""
+        collection = self.db[self.get_collection_name('workers')]
+        workers_doc = collection.find_one({})
+        return workers_doc['workers'] if workers_doc else []
 
     def get_employees_for_month(self, start_date):
         # Get the first and last day of the month
@@ -95,7 +104,7 @@ class MongoService:
             month_end = month_start.replace(month=month_start.month + 1)
 
         # Query for all entries in this date range
-        entries = self.db.dailyEntries.find({
+        entries = self.db[self.get_collection_name('dailyEntries')].find({
             "date": {
                 "$gte": month_start,
                 "$lt": month_end
@@ -119,7 +128,7 @@ class MongoService:
     def upsert_tips(self, date, cash_tips, credit_tips):
         """Update or insert tips for a specific date"""
         # Get existing entry to calculate proportions
-        existing = self.db.dailyEntries.find_one({"date": date})
+        existing = self.db[self.get_collection_name('dailyEntries')].find_one({"date": date})
         
         if existing and existing.get("employees"):
             total_hours = sum(emp["hours"] for emp in existing["employees"])
@@ -140,7 +149,7 @@ class MongoService:
                 })
             
             # Update the entire document
-            return self.db.dailyEntries.update_one(
+            return self.db[self.get_collection_name('dailyEntries')].update_one(
                 {"date": date},
                 {
                     "$set": {
@@ -153,7 +162,7 @@ class MongoService:
             )
         else:
             # If no existing entry, just set the totals
-            return self.db.dailyEntries.update_one(
+            return self.db[self.get_collection_name('dailyEntries')].update_one(
                 {"date": date},
                 {
                     "$set": {
@@ -167,7 +176,7 @@ class MongoService:
     def upsert_employee_hours(self, date, employee_data):
         """Update or insert employee hours for a specific date"""
         # Try to find existing entry for this date
-        existing = self.db.dailyEntries.find_one({"date": date})
+        existing = self.db[self.get_collection_name('dailyEntries')].find_one({"date": date})
         
         if existing:
             # Check if employee exists for this date
@@ -179,7 +188,7 @@ class MongoService:
             
             if employee_exists:
                 # Update existing employee's hours
-                self.db.dailyEntries.update_one(
+                self.db[self.get_collection_name('dailyEntries')].update_one(
                     {
                         "date": date,
                         "employees.name": employee_data["name"]
@@ -192,7 +201,7 @@ class MongoService:
                 )
             else:
                 # Add new employee to existing date
-                self.db.dailyEntries.update_one(
+                self.db[self.get_collection_name('dailyEntries')].update_one(
                     {"date": date},
                     {"$push": {"employees": employee_data}}
                 )
@@ -205,6 +214,6 @@ class MongoService:
                 "totalCreditTips": 0,
                 "employees": [employee_data]
             }
-            self.db.dailyEntries.insert_one(entry)
+            self.db[self.get_collection_name('dailyEntries')].insert_one(entry)
         
         return {"status": "success"}

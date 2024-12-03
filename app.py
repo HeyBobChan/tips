@@ -4,8 +4,25 @@ from datetime import datetime
 import json
 import os
 from restaurant_config import get_restaurant_config, RESTAURANTS
+from functools import wraps
+import atexit
 
 app = Flask(__name__)
+
+def check_db_connection(f):
+    @wraps(f)
+    def decorated_function(restaurant_id, *args, **kwargs):
+        try:
+            mongo_service = MongoService.get_instance(restaurant_id)
+            # Ping database to check connection
+            mongo_service.client.admin.command('ping')
+            return f(restaurant_id, *args, **kwargs)
+        except Exception as e:
+            return jsonify({
+                "error": "Database connection error",
+                "message": str(e)
+            }), 503
+    return decorated_function
 
 @app.route('/')
 def index():
@@ -22,9 +39,22 @@ def restaurant_index(restaurant_id):
 @app.route('/<restaurant_id>/api/tips/AddEntry', methods=['POST'])
 def add_entry(restaurant_id):
     try:
-        mongo_service = MongoService(restaurant_id)
+        mongo_service = MongoService.get_instance(restaurant_id)
         data = request.json
         print(f"Received data: {data}")  # Debug log
+        
+        # Check if worker exists and add if new
+        workers = mongo_service.get_workers()
+        if data['name'] not in workers:
+            workers_file = os.path.join(os.path.dirname(__file__), 'config', restaurant_id, 'workers.json')
+            with open(workers_file, 'r', encoding='utf-8') as f:
+                workers_data = json.load(f)
+            
+            workers_data['workers'].append(data['name'])
+            workers_data['workers'].sort()  # Keep the list alphabetically sorted
+            
+            with open(workers_file, 'w', encoding='utf-8') as f:
+                json.dump(workers_data, f, indent=4, ensure_ascii=False)
         
         # Convert date from YYYY-MM-DD to DD/MM/YYYY
         input_date = datetime.strptime(data['date'], '%Y-%m-%d')
@@ -55,7 +85,7 @@ def add_entry(restaurant_id):
 @app.route('/<restaurant_id>/api/tips/daily/<date>')
 def get_daily_data(restaurant_id, date):
     try:
-        mongo_service = MongoService(restaurant_id)
+        mongo_service = MongoService.get_instance(restaurant_id)
         date_obj = datetime.strptime(date, '%Y-%m-%d')
         employees = mongo_service.get_employees_for_date(date_obj)
         
@@ -109,9 +139,10 @@ def get_daily_data(restaurant_id, date):
         return jsonify({"error": str(e)}), 500
 
 @app.route('/<restaurant_id>/api/tips/monthly/<month>')
+@check_db_connection
 def get_monthly_data(restaurant_id, month):
     try:
-        mongo_service = MongoService(restaurant_id)
+        mongo_service = MongoService.get_instance(restaurant_id)
         start_date = datetime.strptime(f"{month}-01", '%Y-%m-%d')
         daily_entries = mongo_service.get_employees_for_month(start_date)
         MIN_HOURLY_RATE = 50
@@ -206,7 +237,7 @@ def get_monthly_data(restaurant_id, month):
 @app.route('/<restaurant_id>/api/workers')
 def get_workers(restaurant_id):
     try:
-        mongo_service = MongoService(restaurant_id)
+        mongo_service = MongoService.get_instance(restaurant_id)
         workers = mongo_service.get_workers()
         return jsonify(workers)
     except Exception as e:
@@ -216,7 +247,7 @@ def get_workers(restaurant_id):
 @app.route('/<restaurant_id>/api/workers/add', methods=['POST'])
 def add_worker(restaurant_id):
     try:
-        mongo_service = MongoService(restaurant_id)
+        mongo_service = MongoService.get_instance(restaurant_id)
         data = request.json
         if not data or 'name' not in data:
             return jsonify({"error": "No name provided"}), 400
@@ -244,11 +275,23 @@ def add_worker(restaurant_id):
         return jsonify({"error": str(e)}), 500
 
 @app.route('/<restaurant_id>/api/tips/AddHours', methods=['POST'])
+@check_db_connection
 def add_hours(restaurant_id):
     try:
-        mongo_service = MongoService(restaurant_id)
+        mongo_service = MongoService.get_instance(restaurant_id)
         data = request.json
         print(f"Received hours data: {data}")  # Debug log
+        
+        # Check if worker exists and add if new
+        workers = mongo_service.get_workers()
+        if data['name'] not in workers:
+            # Add new worker to MongoDB collection
+            collection = mongo_service.db[mongo_service.get_collection_name('workers')]
+            collection.update_one(
+                {}, 
+                {"$push": {"workers": data['name']}},
+                upsert=True
+            )
         
         # Convert date from YYYY-MM-DD to DD/MM/YYYY
         input_date = datetime.strptime(data['date'], '%Y-%m-%d')
@@ -257,7 +300,7 @@ def add_hours(restaurant_id):
         total_hours = float(data.get('hours', 0) or 0)
         minutes = float(data.get('minutes', 0) or 0)
         total_hours += minutes / 60
-            
+        
         # Format data for mongo_service
         employee_data = {
             'name': data['name'],
@@ -266,8 +309,9 @@ def add_hours(restaurant_id):
             'creditTips': 0  # Initialize with 0
         }
         
-        result = mongo_service.upsert_employee_hours(input_date, employee_data)
-        return jsonify({"status": "success", "message": "Hours updated successfully"})
+        with mongo_service.session_scope() as session:
+            result = mongo_service.upsert_employee_hours(input_date, employee_data, session)
+            return jsonify({"status": "success", "message": "Hours updated successfully"})
     except Exception as e:
         print(f"Error adding hours: {str(e)}")  # Debug log
         return jsonify({"status": "error", "message": str(e)}), 400
@@ -275,7 +319,7 @@ def add_hours(restaurant_id):
 @app.route('/<restaurant_id>/api/tips/AddTips', methods=['POST'])
 def add_tips(restaurant_id):
     try:
-        mongo_service = MongoService(restaurant_id)
+        mongo_service = MongoService.get_instance(restaurant_id)
         data = request.json
         print(f"Received tips data: {data}")  # Debug log
         
@@ -295,7 +339,7 @@ def add_tips(restaurant_id):
 @app.route('/<restaurant_id>/debug')
 def debug_db(restaurant_id):
     try:
-        mongo_service = MongoService(restaurant_id)
+        mongo_service = MongoService.get_instance(restaurant_id)
         
         # Check collections
         workers_coll = mongo_service.get_collection_name('workers')

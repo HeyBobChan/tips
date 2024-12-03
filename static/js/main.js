@@ -159,13 +159,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   
     function renderMonthlyView() {
+      // Generate list of months (current month and 11 previous months)
+      const months = [];
+      for (let i = 0; i < 12; i++) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthValue = date.toISOString().slice(0, 7);
+        const monthLabel = date.toLocaleString('en-GB', { month: 'long', year: 'numeric' });
+        months.push({ value: monthValue, label: monthLabel });
+      }
+
       return `
         <div class="space-y-6">
           <div class="flex justify-between items-center">
             <div>
               <label class="block text-sm font-medium text-gray-700">בחר חודש / Select Month</label>
-              <input type="month" id="monthSelect" value="${currentMonth}"
+              <select id="monthSelect" 
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                ${months.map(month => `
+                  <option value="${month.value}" ${month.value === currentMonth ? 'selected' : ''}>
+                    ${month.label}
+                  </option>
+                `).join('')}
+              </select>
             </div>
             <button id="downloadMonthlyCSV" 
               class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
@@ -343,22 +359,14 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadMonthlyData(month) {
       const container = document.getElementById('monthlyData');
       try {
-        console.log('Fetching monthly data for:', month); // Debug log
         const response = await fetch(`/api/tips/monthly/${month}`);
         if (!response.ok) throw new Error('Failed to load monthly data');
         
         const data = await response.json();
-        console.log('Received monthly data:', data); // Debug log
-        
-        if (!data.employeeTotals || data.employeeTotals.length === 0) {
-          container.innerHTML = '<div class="text-gray-500 text-center py-4">No data available for this month / אין נתונים לחודש זה</div>';
-          return;
-        }
-        
         container.innerHTML = renderMonthlyData(data);
       } catch (error) {
         console.error('Error loading monthly data:', error);
-        container.innerHTML = '<div class="text-red-500 text-center py-4">Error loading data: ' + error.message + '</div>';
+        container.innerHTML = renderMonthlyData(null); // Pass null to show empty state
       }
     }
   
@@ -474,33 +482,42 @@ document.addEventListener('DOMContentLoaded', function() {
                   Compensation / השלמה
                 </th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Avg Hourly / ממוצע לשעה
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Total / סה״כ
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              ${data.employeeTotals.map(emp => `
-                <tr>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    ${emp.name}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                    ${emp.hours.toFixed(2)}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                    ₪${emp.cashTips.toFixed(2)}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                    ₪${emp.creditTips.toFixed(2)}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                    ₪${emp.compensation.toFixed(2)}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                    ₪${emp.finalTotal.toFixed(2)}
-                  </td>
-                </tr>
-              `).join('')}
+              ${data.employeeTotals.map(emp => {
+                const avgHourly = emp.hours > 0 ? emp.finalTotal / emp.hours : 0;
+                return `
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      ${emp.name}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                      ${emp.hours.toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                      ₪${emp.cashTips.toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                      ₪${emp.creditTips.toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                      ₪${emp.compensation.toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                      ₪${avgHourly.toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                      ₪${emp.finalTotal.toFixed(2)}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
             </tbody>
             <tfoot class="bg-gray-50">
               <tr>
@@ -516,6 +533,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
                   ₪${data.totalCompensation.toFixed(2)}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                  ₪${(data.totalHours > 0 ? (data.totalCashTips + data.totalCreditTips + data.totalCompensation) / data.totalHours : 0).toFixed(2)}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
                   ₪${(data.totalCashTips + data.totalCreditTips + data.totalCompensation).toFixed(2)}

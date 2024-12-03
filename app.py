@@ -3,17 +3,26 @@ from mongo_service import MongoService
 from datetime import datetime
 import json
 import os
+from restaurant_config import get_restaurant_config, RESTAURANTS
 
 app = Flask(__name__)
-mongo_service = MongoService()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Show list of available restaurants
+    return render_template('restaurant_select.html', restaurants=RESTAURANTS)
 
-@app.route('/api/tips/AddEntry', methods=['POST'])
-def add_entry():
+@app.route('/<restaurant_id>/')
+def restaurant_index(restaurant_id):
+    restaurant_config = get_restaurant_config(restaurant_id)
+    if not restaurant_config:
+        return "Restaurant not found", 404
+    return render_template('index.html', restaurant=restaurant_config)
+
+@app.route('/<restaurant_id>/api/tips/AddEntry', methods=['POST'])
+def add_entry(restaurant_id):
     try:
+        mongo_service = MongoService(restaurant_id)
         data = request.json
         print(f"Received data: {data}")  # Debug log
         
@@ -43,9 +52,10 @@ def add_entry():
         print(f"Error in add_entry: {str(e)}")  # Debug log
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/tips/daily/<date>')
-def get_daily_data(date):
+@app.route('/<restaurant_id>/api/tips/daily/<date>')
+def get_daily_data(restaurant_id, date):
     try:
+        mongo_service = MongoService(restaurant_id)
         date_obj = datetime.strptime(date, '%Y-%m-%d')
         employees = mongo_service.get_employees_for_date(date_obj)
         
@@ -98,68 +108,81 @@ def get_daily_data(date):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/tips/monthly/<month>')
-def get_monthly_data(month):
+@app.route('/<restaurant_id>/api/tips/monthly/<month>')
+def get_monthly_data(restaurant_id, month):
     try:
-        print(f"Processing monthly data for: {month}")  # Debug log
+        mongo_service = MongoService(restaurant_id)
         start_date = datetime.strptime(f"{month}-01", '%Y-%m-%d')
         daily_entries = mongo_service.get_employees_for_month(start_date)
-        print(f"Found {len(daily_entries)} entries")  # Debug log
-        
-        if not daily_entries:
-            return jsonify({
-                "totalHours": 0,
-                "totalCashTips": 0,
-                "totalCreditTips": 0,
-                "totalCompensation": 0,
-                "employeeTotals": []
-            })
-
         MIN_HOURLY_RATE = 50
         
-        # Group entries by employee
-        employee_totals = {}
+        # Group entries by date to handle daily tip pools
+        daily_totals = {}
         for entry in daily_entries:
-            name = entry["name"]
-            if name not in employee_totals:
-                employee_totals[name] = {
-                    "name": name,
-                    "hours": 0,
-                    "cashTips": 0,
-                    "creditTips": 0,
-                    "compensation": 0
+            date = entry["date"]
+            if date not in daily_totals:
+                daily_totals[date] = {
+                    "totalHours": 0,
+                    "totalCashTips": 0,
+                    "totalCreditTips": 0,
+                    "employees": []
                 }
-            
-            employee_totals[name]["hours"] += entry["hours"]
-            employee_totals[name]["cashTips"] += entry["cashTips"]
-            employee_totals[name]["creditTips"] += entry["creditTips"]
+            daily_totals[date]["totalHours"] += entry["hours"]
+            daily_totals[date]["employees"].append(entry)
+            daily_totals[date]["totalCashTips"] = entry["cashTips"]
+            daily_totals[date]["totalCreditTips"] = entry["creditTips"]
 
-        # Calculate totals and compensation
+        # Calculate monthly totals per employee
+        employee_totals = {}
         monthly_total_hours = 0
         monthly_total_cash = 0
         monthly_total_credit = 0
         monthly_total_compensation = 0
 
+        # Calculate daily distributions and compensations
+        for date, day_data in daily_totals.items():
+            total_hours = day_data["totalHours"]
+            total_cash = day_data["totalCashTips"]
+            total_credit = day_data["totalCreditTips"]
+            total_tips = total_cash + total_credit
+            
+            # Calculate daily compensation if needed
+            avg_tips_per_hour = total_tips / total_hours if total_hours > 0 else 0
+            compensation_needed = max(0, MIN_HOURLY_RATE - avg_tips_per_hour)
+            daily_compensation = compensation_needed * total_hours
+            
+            monthly_total_hours += total_hours
+            monthly_total_cash += total_cash
+            monthly_total_credit += total_credit
+            monthly_total_compensation += daily_compensation
+
+            # Calculate each employee's share for this day
+            for emp in day_data["employees"]:
+                name = emp["name"]
+                if name not in employee_totals:
+                    employee_totals[name] = {
+                        "name": name,
+                        "hours": 0,
+                        "cashTips": 0,
+                        "creditTips": 0,
+                        "compensation": 0
+                    }
+                
+                hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
+                employee_totals[name]["hours"] += emp["hours"]
+                employee_totals[name]["cashTips"] += total_cash * hours_fraction
+                employee_totals[name]["creditTips"] += total_credit * hours_fraction
+                # Add daily compensation if needed
+                employee_totals[name]["compensation"] += compensation_needed * emp["hours"]
+
+        # Convert to list and round values
         employee_list = []
         for emp in employee_totals.values():
-            monthly_total_hours += emp["hours"]
-            monthly_total_cash += emp["cashTips"]
-            monthly_total_credit += emp["creditTips"]
-            
-            # Calculate compensation if needed
-            emp_total_tips = emp["cashTips"] + emp["creditTips"]
-            emp_avg_hourly = emp_total_tips / emp["hours"] if emp["hours"] > 0 else 0
-            emp_compensation = max(0, (MIN_HOURLY_RATE - emp_avg_hourly) * emp["hours"])
-            
-            emp["compensation"] = round(emp_compensation, 2)
-            emp["finalTotal"] = round(emp_total_tips + emp_compensation, 2)
-            monthly_total_compensation += emp_compensation
-            
-            # Round all numeric values
-            emp["hours"] = round(emp["hours"], 2)
+            emp["totalTips"] = round(emp["cashTips"] + emp["creditTips"], 2)
+            emp["finalTotal"] = round(emp["totalTips"] + emp["compensation"], 2)
             emp["cashTips"] = round(emp["cashTips"], 2)
             emp["creditTips"] = round(emp["creditTips"], 2)
-            
+            emp["compensation"] = round(emp["compensation"], 2)
             employee_list.append(emp)
 
         # Sort employees by final total (highest to lowest)
@@ -173,7 +196,6 @@ def get_monthly_data(month):
             "employeeTotals": employee_list
         }
         
-        print(f"Returning monthly data: {monthly_data}")  # Debug log
         return jsonify(monthly_data)
     except Exception as e:
         print(f"Error in monthly data: {str(e)}")
@@ -181,18 +203,20 @@ def get_monthly_data(month):
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/workers')
-def get_workers():
+@app.route('/<restaurant_id>/api/workers')
+def get_workers(restaurant_id):
     try:
+        mongo_service = MongoService(restaurant_id)
         workers = mongo_service.get_workers()
         return jsonify(workers)
     except Exception as e:
         print(f"Error loading workers: {str(e)}")
         return jsonify([]), 500
 
-@app.route('/api/workers/add', methods=['POST'])
-def add_worker():
+@app.route('/<restaurant_id>/api/workers/add', methods=['POST'])
+def add_worker(restaurant_id):
     try:
+        mongo_service = MongoService(restaurant_id)
         data = request.json
         if not data or 'name' not in data:
             return jsonify({"error": "No name provided"}), 400
@@ -201,7 +225,7 @@ def add_worker():
         if not new_name:
             return jsonify({"error": "Name cannot be empty"}), 400
 
-        workers_file = os.path.join(os.path.dirname(__file__), 'config', 'workers.json')
+        workers_file = os.path.join(os.path.dirname(__file__), 'config', restaurant_id, 'workers.json')
         with open(workers_file, 'r', encoding='utf-8') as f:
             workers_data = json.load(f)
 
@@ -219,9 +243,10 @@ def add_worker():
         print(f"Error adding worker: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/tips/AddHours', methods=['POST'])
-def add_hours():
+@app.route('/<restaurant_id>/api/tips/AddHours', methods=['POST'])
+def add_hours(restaurant_id):
     try:
+        mongo_service = MongoService(restaurant_id)
         data = request.json
         print(f"Received hours data: {data}")  # Debug log
         
@@ -247,9 +272,10 @@ def add_hours():
         print(f"Error adding hours: {str(e)}")  # Debug log
         return jsonify({"status": "error", "message": str(e)}), 400
 
-@app.route('/api/tips/AddTips', methods=['POST'])
-def add_tips():
+@app.route('/<restaurant_id>/api/tips/AddTips', methods=['POST'])
+def add_tips(restaurant_id):
     try:
+        mongo_service = MongoService(restaurant_id)
         data = request.json
         print(f"Received tips data: {data}")  # Debug log
         
@@ -265,6 +291,37 @@ def add_tips():
     except Exception as e:
         print(f"Error adding tips: {str(e)}")  # Debug log
         return jsonify({"status": "error", "message": str(e)}), 400
+
+@app.route('/<restaurant_id>/debug')
+def debug_db(restaurant_id):
+    try:
+        mongo_service = MongoService(restaurant_id)
+        
+        # Check collections
+        workers_coll = mongo_service.get_collection_name('workers')
+        daily_coll = mongo_service.get_collection_name('dailyEntries')
+        
+        # Get sample data
+        workers = mongo_service.db[workers_coll].find_one({})
+        daily = mongo_service.db[daily_coll].find_one({})
+        
+        debug_info = {
+            "database": mongo_service.db.name,
+            "collections": {
+                "workers": {
+                    "name": workers_coll,
+                    "sample": workers
+                },
+                "dailyEntries": {
+                    "name": daily_coll,
+                    "sample": str(daily) if daily else None
+                }
+            }
+        }
+        
+        return jsonify(debug_info)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

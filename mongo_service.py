@@ -105,12 +105,16 @@ class MongoService:
         # Flatten the employee data with dates
         result = []
         for entry in entries:
+            # Skip entries that don't have employees data
+            if "employees" not in entry or not entry["employees"]:
+                continue
+            
             for emp in entry["employees"]:
                 emp_data = emp.copy()
                 emp_data["date"] = entry["date"]
                 result.append(emp_data)
 
-        return result 
+        return result
 
     def upsert_tips(self, date, cash_tips, credit_tips):
         """Update or insert tips for a specific date"""
@@ -159,3 +163,48 @@ class MongoService:
                 },
                 upsert=True
             )
+
+    def upsert_employee_hours(self, date, employee_data):
+        """Update or insert employee hours for a specific date"""
+        # Try to find existing entry for this date
+        existing = self.db.dailyEntries.find_one({"date": date})
+        
+        if existing:
+            # Check if employee exists for this date
+            employee_exists = False
+            for emp in existing["employees"]:
+                if emp["name"] == employee_data["name"]:
+                    employee_exists = True
+                    break
+            
+            if employee_exists:
+                # Update existing employee's hours
+                self.db.dailyEntries.update_one(
+                    {
+                        "date": date,
+                        "employees.name": employee_data["name"]
+                    },
+                    {
+                        "$set": {
+                            "employees.$.hours": employee_data["hours"]
+                        }
+                    }
+                )
+            else:
+                # Add new employee to existing date
+                self.db.dailyEntries.update_one(
+                    {"date": date},
+                    {"$push": {"employees": employee_data}}
+                )
+        else:
+            # Create new entry
+            entry = {
+                "date": date,
+                "totalHours": employee_data["hours"],
+                "totalCashTips": 0,
+                "totalCreditTips": 0,
+                "employees": [employee_data]
+            }
+            self.db.dailyEntries.insert_one(entry)
+        
+        return {"status": "success"}

@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   
   function renderApp(container) {
+    // Get restaurant ID from URL path
+    const pathParts = window.location.pathname.split('/');
+    const restaurantId = pathParts[1]; // This will get 'dama' or 'anan' from the URL
+
     let currentView = 'hours';
     let currentDate = new Date().toISOString().split('T')[0];
     let currentMonth = new Date().toISOString().slice(0, 7);
@@ -42,13 +46,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   
     function renderTab(view, text) {
+      // Split text into Hebrew and English parts
+      const [english, hebrew] = text.split(' / ');
       return `
         <button 
-          class="flex-1 py-4 px-6 text-center ${currentView === view ? 
+          class="flex-1 py-2 sm:py-4 px-2 sm:px-6 text-center ${currentView === view ? 
             'border-b-2 border-blue-500 text-blue-500' : 
             'text-gray-500 hover:text-blue-500'}"
           data-view="${view}">
-          ${text}
+          <span class="hidden sm:block">${text}</span>
+          <span class="sm:hidden">${hebrew}</span>
         </button>
       `;
     }
@@ -105,8 +112,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
     function renderTipsForm() {
       return `
-        <form id="tipsForm" class="space-y-6">
-          <div class="grid grid-cols-1 gap-6">
+        <form id="tipsForm" class="space-y-4 sm:space-y-6">
+          <div class="grid grid-cols-1 gap-4 sm:gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700">תאריך / Date *</label>
               <input type="date" name="date" required value="${currentDate}"
@@ -246,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (downloadDailyBtn) {
         downloadDailyBtn.addEventListener('click', async () => {
           try {
-            const response = await fetch(`/api/tips/daily/${currentDate}`);
+            const response = await fetch(`/${restaurantId}/api/tips/daily/${currentDate}`);
             if (!response.ok) throw new Error('Failed to load daily data');
             const data = await response.json();
             const csvContent = generateDailyCSV(data);
@@ -261,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (downloadMonthlyBtn) {
         downloadMonthlyBtn.addEventListener('click', async () => {
           try {
-            const response = await fetch(`/api/tips/monthly/${currentMonth}`);
+            const response = await fetch(`/${restaurantId}/api/tips/monthly/${currentMonth}`);
             if (!response.ok) throw new Error('Failed to load monthly data');
             const data = await response.json();
             const csvContent = generateMonthlyCSV(data);
@@ -303,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const data = Object.fromEntries(formData.entries());
   
       try {
-        const response = await fetch('/api/tips/AddHours', {
+        const response = await fetch(`/${restaurantId}/api/tips/AddHours`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -326,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const data = Object.fromEntries(formData.entries());
   
       try {
-        const response = await fetch('/api/tips/AddTips', {
+        const response = await fetch(`/${restaurantId}/api/tips/AddTips`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -346,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadDailyData(date) {
       const container = document.getElementById('dailyData');
       try {
-        const response = await fetch(`/api/tips/daily/${date}`);
+        const response = await fetch(`/${restaurantId}/api/tips/daily/${date}`);
         if (!response.ok) throw new Error('Failed to load daily data');
         
         const data = await response.json();
@@ -359,14 +366,14 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadMonthlyData(month) {
       const container = document.getElementById('monthlyData');
       try {
-        const response = await fetch(`/api/tips/monthly/${month}`);
+        const response = await fetch(`/${restaurantId}/api/tips/monthly/${month}`);
         if (!response.ok) throw new Error('Failed to load monthly data');
         
         const data = await response.json();
         container.innerHTML = renderMonthlyData(data);
       } catch (error) {
         console.error('Error loading monthly data:', error);
-        container.innerHTML = renderMonthlyData(null); // Pass null to show empty state
+        container.innerHTML = renderMonthlyData(null);
       }
     }
   
@@ -377,82 +384,91 @@ document.addEventListener('DOMContentLoaded', function() {
         totalCashTips: data?.totalCashTips || 0,
         totalCreditTips: data?.totalCreditTips || 0,
         avgTipsPerHour: data?.avgTipsPerHour || 0,
-        avgWagePerHour: data?.avgWagePerHour || 0,
         compensation: data?.compensation || 0,
         employees: data?.employees || [],
         totalTips: (data?.totalCashTips || 0) + (data?.totalCreditTips || 0)
       };
 
+      // Calculate average wage per hour (tips + compensation)
+      safeData.avgWagePerHour = safeData.totalHours > 0 ? 
+        ((safeData.totalTips + safeData.compensation) / safeData.totalHours).toFixed(2) : 0;
+
       return `
-        <div class="grid grid-cols-5 gap-4 mb-6">
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <h3 class="font-semibold">Total Hours / סה״כ שעות</h3>
-            <p class="text-2xl">${safeData.totalHours.toFixed(2)}</p>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="bg-gray-50 p-3 sm:p-4 rounded-lg">
+            <h3 class="font-semibold text-sm sm:text-base">Total Hours / סה״כ שעות</h3>
+            <p class="text-xl sm:text-2xl">${safeData.totalHours.toFixed(2)}</p>
           </div>
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <h3 class="font-semibold">Cash Tips / טיפים במזומן</h3>
-            <p class="text-2xl">₪${safeData.totalCashTips.toFixed(2)}</p>
+          <div class="bg-gray-50 p-3 sm:p-4 rounded-lg">
+            <h3 class="font-semibold text-sm sm:text-base">Cash Tips / טיפים במזומן</h3>
+            <p class="text-xl sm:text-2xl">₪${safeData.totalCashTips.toFixed(2)}</p>
           </div>
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <h3 class="font-semibold">Credit Tips / טיפים באשראי</h3>
-            <p class="text-2xl">₪${safeData.totalCreditTips.toFixed(2)}</p>
+          <div class="bg-gray-50 p-3 sm:p-4 rounded-lg">
+            <h3 class="font-semibold text-sm sm:text-base">Credit Tips / טיפים באשראי</h3>
+            <p class="text-xl sm:text-2xl">₪${safeData.totalCreditTips.toFixed(2)}</p>
           </div>
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <h3 class="font-semibold">Compensation / השלמה</h3>
-            <p class="text-2xl">₪${safeData.compensation.toFixed(2)}</p>
+          <div class="bg-gray-50 p-3 sm:p-4 rounded-lg">
+            <h3 class="font-semibold text-sm sm:text-base">Compensation / השלמה</h3>
+            <p class="text-xl sm:text-2xl">₪${safeData.compensation.toFixed(2)}</p>
           </div>
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <h3 class="font-semibold">Avg Per Hour / ממוצע לשעה</h3>
-            <p class="text-2xl">₪${safeData.avgWagePerHour.toFixed(2)}</p>
+          <div class="bg-gray-50 p-3 sm:p-4 rounded-lg col-span-2">
+            <h3 class="font-semibold text-sm sm:text-base">Avg Per Hour / ממוצע לשעה</h3>
+            <p class="text-xl sm:text-2xl">₪${safeData.avgWagePerHour}</p>
           </div>
         </div>
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Employee / עובד
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hours / שעות
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Cash / מזומן
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Credit / אשראי
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Compensation / השלמה
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Final Total / סה״כ
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            ${safeData.employees.length > 0 ? 
-              safeData.employees.map(emp => `
+
+        <!-- Responsive table wrapper -->
+        <div class="overflow-x-auto -mx-6 sm:mx-0">
+          <div class="inline-block min-w-full align-middle">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
                 <tr>
-                  <td class="px-6 py-4 whitespace-nowrap text-right">${emp.name}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right">${emp.hours.toFixed(2)}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right">₪${emp.cashTips.toFixed(2)}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right">₪${emp.creditTips.toFixed(2)}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right ${emp.compensation > 0 ? 'text-green-600' : ''}">
-                    ${emp.compensation > 0 ? '+' : ''}₪${emp.compensation.toFixed(2)}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right font-medium">₪${emp.finalTotal.toFixed(2)}</td>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Employee / עובד
+                  </th>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hours / שעות
+                  </th>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cash / מזומן
+                  </th>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Credit / אשראי
+                  </th>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Comp / השלמה
+                  </th>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total / סה״כ
+                  </th>
                 </tr>
-              `).join('')
-              : `
-                <tr>
-                  <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
-                    No data available for this day / אין נתונים ליום זה
-                  </td>
-                </tr>
-              `
-            }
-          </tbody>
-        </table>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                ${safeData.employees.length > 0 ? 
+                  safeData.employees.map(emp => `
+                    <tr>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right">${emp.name}</td>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right">${emp.hours.toFixed(2)}</td>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right">₪${emp.cashTips.toFixed(2)}</td>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right">₪${emp.creditTips.toFixed(2)}</td>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right ${emp.compensation > 0 ? 'text-green-600' : ''}">
+                        ${emp.compensation > 0 ? '+' : ''}₪${emp.compensation.toFixed(2)}
+                      </td>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right font-medium">₪${emp.finalTotal.toFixed(2)}</td>
+                    </tr>
+                  `).join('')
+                  : `
+                    <tr>
+                      <td colspan="6" class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-center text-gray-500">
+                        No data available for this day / אין נתונים ליום זה
+                      </td>
+                    </tr>
+                  `
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       `;
     }
   
@@ -462,87 +478,89 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       return `
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Employee / עובד
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hours / שעות
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Cash Tips / טיפים במזומן
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Credit Tips / טיפים באשראי
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Compensation / השלמה
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Avg Hourly / ממוצע לשעה
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total / סה״כ
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              ${data.employeeTotals.map(emp => {
-                const avgHourly = emp.hours > 0 ? emp.finalTotal / emp.hours : 0;
-                return `
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      ${emp.name}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                      ${emp.hours.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                      ₪${emp.cashTips.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                      ₪${emp.creditTips.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                      ₪${emp.compensation.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                      ₪${avgHourly.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                      ₪${emp.finalTotal.toFixed(2)}
-                    </td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-            <tfoot class="bg-gray-50">
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Totals / סה״כ</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                  ${data.totalHours.toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                  ₪${data.totalCashTips.toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                  ₪${data.totalCreditTips.toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                  ₪${data.totalCompensation.toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                  ₪${(data.totalHours > 0 ? (data.totalCashTips + data.totalCreditTips + data.totalCompensation) / data.totalHours : 0).toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                  ₪${(data.totalCashTips + data.totalCreditTips + data.totalCompensation).toFixed(2)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+        <div class="overflow-x-auto -mx-6 sm:mx-0">
+          <div class="inline-block min-w-full align-middle">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Employee / עובד
+                  </th>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hours / שעות
+                  </th>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cash / מזומן
+                  </th>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Credit / אשראי
+                  </th>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Comp / השלמה
+                  </th>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Avg / ממוצע
+                  </th>
+                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total / סה״כ
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                ${data.employeeTotals.map(emp => {
+                  const avgHourly = emp.hours > 0 ? emp.finalTotal / emp.hours : 0;
+                  return `
+                    <tr>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ${emp.name}
+                      </td>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                        ${emp.hours.toFixed(2)}
+                      </td>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                        ₪${emp.cashTips.toFixed(2)}
+                      </td>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                        ₪${emp.creditTips.toFixed(2)}
+                      </td>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                        ₪${emp.compensation.toFixed(2)}
+                      </td>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                        ₪${avgHourly.toFixed(2)}
+                      </td>
+                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                        ₪${emp.finalTotal.toFixed(2)}
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+              <tfoot class="bg-gray-50">
+                <tr>
+                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">Totals / סה״כ</td>
+                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    ${data.totalHours.toFixed(2)}
+                  </td>
+                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    ₪${data.totalCashTips.toFixed(2)}
+                  </td>
+                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    ₪${data.totalCreditTips.toFixed(2)}
+                  </td>
+                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    ₪${data.totalCompensation.toFixed(2)}
+                  </td>
+                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    ₪${(data.totalHours > 0 ? (data.totalCashTips + data.totalCreditTips + data.totalCompensation) / data.totalHours : 0).toFixed(2)}
+                  </td>
+                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                    ₪${(data.totalCashTips + data.totalCreditTips + data.totalCompensation).toFixed(2)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
       `;
     }
@@ -550,7 +568,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add this function to populate the workers dropdown
     async function populateWorkerSelect() {
       try {
-        const response = await fetch('/api/workers');
+        const response = await fetch(`/${restaurantId}/api/workers`);
         if (!response.ok) throw new Error('Failed to load workers');
         const workers = await response.json();
         

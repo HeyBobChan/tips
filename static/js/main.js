@@ -23,11 +23,19 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="w-full max-w-6xl mx-auto p-4">
           <div class="bg-white shadow-lg rounded-lg">
             <!-- Tabs -->
-            <div class="flex border-b">
-              ${renderTab('hours', 'Work Hours / שעות עבודה')}
-              ${renderTab('tips', 'Tips Entry / הכנסת טיפים')}
-              ${renderTab('daily', 'Daily Summary / סיכום יומי')}
-              ${renderTab('monthly', 'Monthly Summary / סיכום חודשי')}
+            <div class="grid grid-cols-2 md:flex border-b">
+              <div class="col-span-1 border-r border-b md:border-b-0 flex">
+                ${renderTab('hours', 'Work Hours / שעות עבודה')}
+              </div>
+              <div class="col-span-1 border-b md:border-b-0 flex">
+                ${renderTab('tips', 'Tips Entry / הכנסת טיפים')}
+              </div>
+              <div class="col-span-1 border-r flex">
+                ${renderTab('daily', 'Daily Summary / סיכום יומי')}
+              </div>
+              <div class="col-span-1 flex">
+                ${renderTab('monthly', 'Monthly Summary / סיכום חודשי')}
+              </div>
             </div>
   
             <!-- Content -->
@@ -50,12 +58,16 @@ document.addEventListener('DOMContentLoaded', function() {
       const [english, hebrew] = text.split(' / ');
       return `
         <button 
-          class="flex-1 py-2 sm:py-4 px-2 sm:px-6 text-center ${currentView === view ? 
+          class="w-full py-3 px-2 text-center flex flex-col items-center justify-center ${
+            currentView === view ? 
             'border-b-2 border-blue-500 text-blue-500' : 
             'text-gray-500 hover:text-blue-500'}"
           data-view="${view}">
-          <span class="hidden sm:block">${text}</span>
-          <span class="sm:hidden">${hebrew}</span>
+          <span class="hidden md:block w-full">${text}</span>
+          <span class="md:hidden w-full">
+            <div class="text-xs font-medium">${hebrew}</div>
+            <div class="text-xs">${english}</div>
+          </span>
         </button>
       `;
     }
@@ -204,11 +216,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   
     function addEventListeners() {
-      // Tab switching
-      document.querySelectorAll('[data-view]').forEach(tab => {
-        tab.addEventListener('click', (e) => {
-          currentView = e.target.dataset.view;
-          render();
+      // Tab switching - ensure the entire button area is clickable
+      document.querySelectorAll('[data-view]').forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.preventDefault();
+          const view = this.dataset.view;
+          if (view) {
+            currentView = view;
+            render();
+          }
         });
       });
   
@@ -394,79 +410,80 @@ document.addEventListener('DOMContentLoaded', function() {
         ((safeData.totalTips + safeData.compensation) / safeData.totalHours).toFixed(2) : 0;
 
       return `
-        <div class="grid grid-cols-2 gap-4 mb-6">
-          <div class="bg-gray-50 p-3 sm:p-4 rounded-lg">
-            <h3 class="font-semibold text-sm sm:text-base">Total Hours / סה״כ שעות</h3>
-            <p class="text-xl sm:text-2xl">${safeData.totalHours.toFixed(2)}</p>
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="font-semibold text-sm">Total Hours / סה״כ שעות</h3>
+              <p class="text-xl">${safeData.totalHours.toFixed(2)}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="font-semibold text-sm">Cash Tips / טיפים במזומן</h3>
+              <p class="text-xl">₪${safeData.totalCashTips.toFixed(2)}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="font-semibold text-sm">Credit Tips / טיפים באשראי</h3>
+              <p class="text-xl">₪${safeData.totalCreditTips.toFixed(2)}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="font-semibold text-sm">Compensation / השלמה</h3>
+              <p class="text-xl">₪${safeData.compensation.toFixed(2)}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="font-semibold text-sm">Avg Per Hour / ממוצע לשעה</h3>
+              <p class="text-xl">₪${safeData.avgWagePerHour}</p>
+            </div>
           </div>
-          <div class="bg-gray-50 p-3 sm:p-4 rounded-lg">
-            <h3 class="font-semibold text-sm sm:text-base">Cash Tips / טיפים במזומן</h3>
-            <p class="text-xl sm:text-2xl">₪${safeData.totalCashTips.toFixed(2)}</p>
-          </div>
-          <div class="bg-gray-50 p-3 sm:p-4 rounded-lg">
-            <h3 class="font-semibold text-sm sm:text-base">Credit Tips / טיפים באשראי</h3>
-            <p class="text-xl sm:text-2xl">₪${safeData.totalCreditTips.toFixed(2)}</p>
-          </div>
-          <div class="bg-gray-50 p-3 sm:p-4 rounded-lg">
-            <h3 class="font-semibold text-sm sm:text-base">Compensation / השלמה</h3>
-            <p class="text-xl sm:text-2xl">₪${safeData.compensation.toFixed(2)}</p>
-          </div>
-          <div class="bg-gray-50 p-3 sm:p-4 rounded-lg col-span-2">
-            <h3 class="font-semibold text-sm sm:text-base">Avg Per Hour / ממוצע לשעה</h3>
-            <p class="text-xl sm:text-2xl">₪${safeData.avgWagePerHour}</p>
-          </div>
-        </div>
 
-        <!-- Responsive table wrapper -->
-        <div class="overflow-x-auto -mx-6 sm:mx-0">
-          <div class="inline-block min-w-full align-middle">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Employee / עובד
-                  </th>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Hours / שעות
-                  </th>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cash / מזומן
-                  </th>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Credit / אשראי
-                  </th>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Comp / השלמה
-                  </th>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total / סה״כ
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                ${safeData.employees.length > 0 ? 
-                  safeData.employees.map(emp => `
-                    <tr>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right">${emp.name}</td>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right">${emp.hours.toFixed(2)}</td>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right">₪${emp.cashTips.toFixed(2)}</td>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right">₪${emp.creditTips.toFixed(2)}</td>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right ${emp.compensation > 0 ? 'text-green-600' : ''}">
-                        ${emp.compensation > 0 ? '+' : ''}₪${emp.compensation.toFixed(2)}
-                      </td>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right font-medium">₪${emp.finalTotal.toFixed(2)}</td>
-                    </tr>
-                  `).join('')
-                  : `
-                    <tr>
-                      <td colspan="6" class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-center text-gray-500">
-                        No data available for this day / אין נתונים ליום זה
-                      </td>
-                    </tr>
-                  `
-                }
-              </tbody>
-            </table>
+          <div class="overflow-x-auto">
+            <div class="inline-block min-w-full align-middle">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Employee / עובד
+                    </th>
+                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Hours / שעות
+                    </th>
+                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Cash / מזומן
+                    </th>
+                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Credit / אשראי
+                    </th>
+                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Comp. / השלמה
+                    </th>
+                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total / סה״כ
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  ${safeData.employees.length > 0 ? 
+                    safeData.employees.map(emp => `
+                      <tr>
+                        <td class="px-3 py-2 whitespace-nowrap text-right text-sm">${emp.name}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-right text-sm">${emp.hours.toFixed(2)}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-right text-sm">₪${emp.cashTips.toFixed(2)}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-right text-sm">₪${emp.creditTips.toFixed(2)}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-right text-sm ${emp.compensation > 0 ? 'text-green-600' : ''}">
+                          ${emp.compensation > 0 ? '+' : ''}₪${emp.compensation.toFixed(2)}
+                        </td>
+                        <td class="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">₪${emp.finalTotal.toFixed(2)}</td>
+                      </tr>
+                    `).join('')
+                    : `
+                      <tr>
+                        <td colspan="6" class="px-3 py-2 whitespace-nowrap text-center text-sm text-gray-500">
+                          No data available for this day / אין נתונים ליום זה
+                        </td>
+                      </tr>
+                    `
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       `;
@@ -478,89 +495,87 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       return `
-        <div class="overflow-x-auto -mx-6 sm:mx-0">
-          <div class="inline-block min-w-full align-middle">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Employee / עובד
-                  </th>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Hours / שעות
-                  </th>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cash / מזומן
-                  </th>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Credit / אשראי
-                  </th>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Comp / השלמה
-                  </th>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Avg / ממוצע
-                  </th>
-                  <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total / סה״כ
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                ${data.employeeTotals.map(emp => {
-                  const avgHourly = emp.hours > 0 ? emp.finalTotal / emp.hours : 0;
-                  return `
-                    <tr>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ${emp.name}
-                      </td>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                        ${emp.hours.toFixed(2)}
-                      </td>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                        ₪${emp.cashTips.toFixed(2)}
-                      </td>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                        ₪${emp.creditTips.toFixed(2)}
-                      </td>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                        ₪${emp.compensation.toFixed(2)}
-                      </td>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                        ₪${avgHourly.toFixed(2)}
-                      </td>
-                      <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                        ₪${emp.finalTotal.toFixed(2)}
-                      </td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-              <tfoot class="bg-gray-50">
-                <tr>
-                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">Totals / סה״כ</td>
-                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                    ${data.totalHours.toFixed(2)}
-                  </td>
-                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                    ₪${data.totalCashTips.toFixed(2)}
-                  </td>
-                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                    ₪${data.totalCreditTips.toFixed(2)}
-                  </td>
-                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                    ₪${data.totalCompensation.toFixed(2)}
-                  </td>
-                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                    ₪${(data.totalHours > 0 ? (data.totalCashTips + data.totalCreditTips + data.totalCompensation) / data.totalHours : 0).toFixed(2)}
-                  </td>
-                  <td class="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                    ₪${(data.totalCashTips + data.totalCreditTips + data.totalCompensation).toFixed(2)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Employee / עובד
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Hours / שעות
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Cash Tips / טיפים במזומן
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Credit Tips / טיפים באשראי
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Compensation / השלמה
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Avg Hourly / ממוצע לשעה
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total / סה״כ
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              ${data.employeeTotals.map(emp => {
+                const avgHourly = emp.hours > 0 ? emp.finalTotal / emp.hours : 0;
+                return `
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      ${emp.name}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                      ${emp.hours.toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                      ₪${emp.cashTips.toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                      ₪${emp.creditTips.toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                      ₪${emp.compensation.toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                      ₪${avgHourly.toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                      ₪${emp.finalTotal.toFixed(2)}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+            <tfoot class="bg-gray-50">
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Totals / סה״כ</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                  ${data.totalHours.toFixed(2)}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                  ₪${data.totalCashTips.toFixed(2)}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                  ₪${data.totalCreditTips.toFixed(2)}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                  ₪${data.totalCompensation.toFixed(2)}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                  ₪${(data.totalHours > 0 ? (data.totalCashTips + data.totalCreditTips + data.totalCompensation) / data.totalHours : 0).toFixed(2)}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                  ₪${(data.totalCashTips + data.totalCreditTips + data.totalCompensation).toFixed(2)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       `;
     }

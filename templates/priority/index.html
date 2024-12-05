@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>המושיע פריוריטי</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='priority/style.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <header>
+            <h1>המושיע פריוריטי</h1>
+        </header>
+        <main id="chat-messages"></main>
+        <footer>
+            <form id="chat-form">
+                <div id="drop-zone">גרור או הדבק תמונה</div>
+                <textarea id="user-input" placeholder="הקלד את ההודעה שלך כאן..."></textarea>
+                <input type="file" id="hidden-file-input" accept="image/*" style="display: none;">
+                <button type="submit">שלח</button>
+            </form>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='priority/chat.js') }}"></script>
+</body>
+</html>

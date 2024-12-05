@@ -14,6 +14,10 @@ RESTAURANTS = {
     'anan': {
         'name': 'Anan Restaurant',
         'min_hourly_rate': 50
+    },
+    'test': {
+        'name': 'Test Restaurant',
+        'min_hourly_rate': 50
     }
 }
 

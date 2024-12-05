@@ -9,11 +9,14 @@ MONGODB_DB_NAME = getenv('MONGODB_DB_NAME', 'tipsManagementDB')
 RESTAURANTS = {
     'dama': {
         'name': 'Dama Restaurant',
-        'min_hourly_rate': 50
+        'min_hourly_rate': {
+            'default': 50,
+            'saturday': 75  # Different rate on Saturdays
+        }
     },
     'anan': {
         'name': 'Anan Restaurant',
-        'min_hourly_rate': 50
+                'min_hourly_rate': 80
     },
     'test': {
         'name': 'Test Restaurant',
@@ -28,4 +31,4 @@ def get_mongodb_config():
     return {
         'uri': MONGODB_URI,
         'db_name': MONGODB_DB_NAME
-    } 
+    }

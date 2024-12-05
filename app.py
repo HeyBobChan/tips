@@ -36,7 +36,7 @@ def get_assistant_response(user_input="", image_data=None):
 
     message_content = []
     
-    if user_input:
+    if (user_input):
         message_content.append({"type": "text", "text": user_input})
     
     if image_data:
@@ -109,8 +109,6 @@ def cleanup_files():
 
 app = Flask(__name__)
 app.secret_key = 'b2e9c2e0f7ad4f91b5b84a2952d90b0c'
-
-# Initialize OpenAI client
 
 # Initialize OpenAI client with API key from secrets
 api_key = os.getenv('OPENAI_API_KEY')
@@ -216,7 +214,19 @@ def add_entry(restaurant_id):
 def get_daily_data(restaurant_id, date):
     try:
         mongo_service = MongoService.get_instance(restaurant_id)
+        restaurant_config = get_restaurant_config(restaurant_id)
+        if not restaurant_config:
+            return jsonify({"error": "Restaurant not found"}), 404
+
         date_obj = datetime.strptime(date, '%Y-%m-%d')
+        day_of_week = date_obj.strftime('%A').lower()  # e.g., 'saturday'
+        min_hourly_rate = restaurant_config['min_hourly_rate']
+
+        if isinstance(min_hourly_rate, dict):
+            MIN_HOURLY_RATE = min_hourly_rate.get(day_of_week, min_hourly_rate.get('default', 50))
+        else:
+            MIN_HOURLY_RATE = min_hourly_rate
+
         employees = mongo_service.get_employees_for_date(date_obj)
         
         if not employees:
@@ -229,8 +239,6 @@ def get_daily_data(restaurant_id, date):
                 "employees": []
             })
 
-        MIN_HOURLY_RATE = 50  # Minimum hourly rate in NIS
-        
         # Get total hours and tips for the day
         total_hours = sum(e["hours"] for e in employees)
         total_cash_tips = sum(e["cashTips"] for e in employees)
@@ -273,9 +281,13 @@ def get_daily_data(restaurant_id, date):
 def get_monthly_data(restaurant_id, month):
     try:
         mongo_service = MongoService.get_instance(restaurant_id)
+        restaurant_config = get_restaurant_config(restaurant_id)
+        if not restaurant_config:
+            return jsonify({"error": "Restaurant not found"}), 404
+
+        min_hourly_rate_config = restaurant_config['min_hourly_rate']
         start_date = datetime.strptime(f"{month}-01", '%Y-%m-%d')
         daily_entries = mongo_service.get_employees_for_month(start_date)
-        MIN_HOURLY_RATE = 50
         
         # Group entries by date to handle daily tip pools
         daily_totals = {}
@@ -302,16 +314,24 @@ def get_monthly_data(restaurant_id, month):
 
         # Calculate daily distributions and compensations
         for date, day_data in daily_totals.items():
+            date_obj = datetime.strptime(date, '%Y-%m-%d')
+            day_of_week = date_obj.strftime('%A').lower()
+
+            if isinstance(min_hourly_rate_config, dict):
+                min_rate = min_hourly_rate_config.get(day_of_week, min_hourly_rate_config.get('default', 50))
+            else:
+                min_rate = min_hourly_rate_config
+
+            # Use min_rate in calculations
             total_hours = day_data["totalHours"]
             total_cash = day_data["totalCashTips"]
             total_credit = day_data["totalCreditTips"]
             total_tips = total_cash + total_credit
-            
-            # Calculate daily compensation if needed
+
             avg_tips_per_hour = total_tips / total_hours if total_hours > 0 else 0
-            compensation_needed = max(0, MIN_HOURLY_RATE - avg_tips_per_hour)
+            compensation_needed = max(0, min_rate - avg_tips_per_hour)
             daily_compensation = compensation_needed * total_hours
-            
+
             monthly_total_hours += total_hours
             monthly_total_cash += total_cash
             monthly_total_credit += total_credit
@@ -336,7 +356,7 @@ def get_monthly_data(restaurant_id, month):
                 if total_hours > 0:
                     hours_fraction = emp["hours"] / total_hours
                     emp_tips_per_hour = (emp["cashTips"] + emp["creditTips"]) / emp["hours"] if emp["hours"] > 0 else 0
-                    emp_compensation_needed = max(0, MIN_HOURLY_RATE - emp_tips_per_hour)
+                    emp_compensation_needed = max(0, min_rate - emp_tips_per_hour)
                     employee_totals[name]["compensation"] += emp_compensation_needed * emp["hours"]
 
         # Convert to list and round values

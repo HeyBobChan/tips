@@ -112,8 +112,27 @@ app.secret_key = 'b2e9c2e0f7ad4f91b5b84a2952d90b0c'
 
 # Initialize OpenAI client
 
-client = OpenAI() 
+# Initialize OpenAI client with API key from secrets
+api_key = os.getenv('OPENAI_API_KEY')
 assistant_id = os.getenv('OPENAI_ASSISTANT_ID')
+
+# Try to get credentials from secrets file if not in environment
+secrets_path = '/etc/secrets/.env'
+if os.path.exists(secrets_path):
+    with open(secrets_path, 'r') as f:
+        for line in f:
+            if not api_key and line.startswith('OPENAI_API_KEY='):
+                api_key = line.split('=')[1].strip()
+            elif not assistant_id and line.startswith('OPENAI_ASSISTANT_ID='):
+                assistant_id = line.split('=')[1].strip()
+
+if not api_key:
+    raise ValueError("OPENAI_API_KEY not found in environment or secrets")
+if not assistant_id:
+    raise ValueError("OPENAI_ASSISTANT_ID not found in environment or secrets")
+
+# Initialize OpenAI client with the API key
+client = OpenAI(api_key=api_key)
 FILE_TIMEOUT = timedelta(minutes=2)
 
 def check_db_connection(f):

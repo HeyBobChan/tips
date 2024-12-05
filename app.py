@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session
 from mongo_service import MongoService
 from datetime import datetime
 import json
@@ -6,8 +6,114 @@ import os
 from restaurant_config import get_restaurant_config, RESTAURANTS
 from functools import wraps
 import atexit
+from openai import OpenAI
+import time
+import tempfile
+import re
+from datetime import datetime, timedelta
+
+
+def wait_on_run(run, thread):
+    while run.status in ["queued", "in_progress"]:
+        run = client.beta.threads.runs.retrieve(
+            thread_id=thread.id,
+            run_id=run.id,
+        )
+        time.sleep(0.5)
+    return run
+
+def clean_response(text):
+    # Remove patterns like '【...†...】'
+    cleaned_text = re.sub(r'【[^】]*?†[^】]*?】', '', text)
+    # Optionally, remove any other markers if needed
+    cleaned_text = re.sub(r'[\[\]]', '', cleaned_text)
+    # Strip leading and trailing whitespace
+    return cleaned_text.strip()
+
+def get_assistant_response(user_input="", image_data=None):
+    if 'thread_id' not in session:
+        session['thread_id'] = client.beta.threads.create().id
+
+    message_content = []
+    
+    if user_input:
+        message_content.append({"type": "text", "text": user_input})
+    
+    if image_data:
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_file:
+            temp_file.write(image_data)
+            temp_file_path = temp_file.name
+
+        # Upload the file to OpenAI
+        with open(temp_file_path, "rb") as file:
+            response = client.files.create(file=file, purpose="vision")
+            file_id = response.id
+
+        # Delete the temporary file
+        os.unlink(temp_file_path)
+
+        # Add the file to the message
+        message_content.append({
+            "type": "image_file",
+            "image_file": {"file_id": file_id}
+        })
+
+        # Store file info in session
+        if 'files' not in session:
+            session['files'] = []
+        session['files'].append({'id': file_id, 'timestamp': datetime.now().isoformat()})
+        session.modified = True
+
+    # Create the message
+    message = client.beta.threads.messages.create(
+        thread_id=session['thread_id'],
+        role="user",
+        content=message_content,
+    )
+
+    # Run the assistant
+    run = client.beta.threads.runs.create(
+        thread_id=session['thread_id'],
+        assistant_id=assistant_id,
+    )
+
+    run = wait_on_run(run, client.beta.threads.retrieve(session['thread_id']))
+
+    # Retrieve the assistant's response
+    messages = client.beta.threads.messages.list(
+        thread_id=session['thread_id'], order="asc", after=message.id
+    )
+
+    # Clean the response
+    raw_response = messages.data[0].content[0].text.value
+    cleaned_response = clean_response(raw_response)
+
+    return cleaned_response
+
+def cleanup_files():
+    if 'files' in session:
+        current_time = datetime.now()
+        files_to_keep = []
+        for file in session['files']:
+            file_time = datetime.fromisoformat(file['timestamp'])
+            if current_time - file_time < FILE_TIMEOUT:
+                files_to_keep.append(file)
+            else:
+                try:
+                    client.files.delete(file['id'])
+                except Exception as e:
+                    print(f"Error deleting file {file['id']}: {e}")
+        session['files'] = files_to_keep
+        session.modified = True
 
 app = Flask(__name__)
+app.secret_key = 'b2e9c2e0f7ad4f91b5b84a2952d90b0c'
+
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+assistant_id = os.getenv('OPENAI_ASSISTANT_ID')
+FILE_TIMEOUT = timedelta(minutes=2)
 
 def check_db_connection(f):
     @wraps(f)
@@ -26,6 +132,10 @@ def check_db_connection(f):
 
 @app.route('/')
 def index():
+    return render_template('landing.html')
+
+@app.route('/select')
+def select():
     # Show list of available restaurants
     return render_template('restaurant_select.html', restaurants=RESTAURANTS)
 
@@ -159,9 +269,9 @@ def get_monthly_data(restaurant_id, month):
                     "employees": []
                 }
             daily_totals[date]["totalHours"] += entry["hours"]
+            daily_totals[date]["totalCashTips"] += entry["cashTips"]
+            daily_totals[date]["totalCreditTips"] += entry["creditTips"]
             daily_totals[date]["employees"].append(entry)
-            daily_totals[date]["totalCashTips"] = entry["cashTips"]
-            daily_totals[date]["totalCreditTips"] = entry["creditTips"]
 
         # Calculate monthly totals per employee
         employee_totals = {}
@@ -199,21 +309,26 @@ def get_monthly_data(restaurant_id, month):
                         "compensation": 0
                     }
                 
-                hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
                 employee_totals[name]["hours"] += emp["hours"]
-                employee_totals[name]["cashTips"] += total_cash * hours_fraction
-                employee_totals[name]["creditTips"] += total_credit * hours_fraction
-                # Add daily compensation if needed
-                employee_totals[name]["compensation"] += compensation_needed * emp["hours"]
+                employee_totals[name]["cashTips"] += emp["cashTips"]
+                employee_totals[name]["creditTips"] += emp["creditTips"]
+                
+                if total_hours > 0:
+                    hours_fraction = emp["hours"] / total_hours
+                    emp_tips_per_hour = (emp["cashTips"] + emp["creditTips"]) / emp["hours"] if emp["hours"] > 0 else 0
+                    emp_compensation_needed = max(0, MIN_HOURLY_RATE - emp_tips_per_hour)
+                    employee_totals[name]["compensation"] += emp_compensation_needed * emp["hours"]
 
         # Convert to list and round values
         employee_list = []
         for emp in employee_totals.values():
-            emp["totalTips"] = round(emp["cashTips"] + emp["creditTips"], 2)
-            emp["finalTotal"] = round(emp["totalTips"] + emp["compensation"], 2)
+            emp["hours"] = round(emp["hours"], 2)
             emp["cashTips"] = round(emp["cashTips"], 2)
             emp["creditTips"] = round(emp["creditTips"], 2)
             emp["compensation"] = round(emp["compensation"], 2)
+            emp["totalTips"] = round(emp["cashTips"] + emp["creditTips"], 2)
+            emp["finalTotal"] = round(emp["totalTips"] + emp["compensation"], 2)
+            emp["avgHourly"] = round(emp["finalTotal"] / emp["hours"], 2) if emp["hours"] > 0 else 0
             employee_list.append(emp)
 
         # Sort employees by final total (highest to lowest)
@@ -366,6 +481,30 @@ def debug_db(restaurant_id):
         return jsonify(debug_info)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/priority/')
+def priority_home():
+    return render_template('priority/index.html')
+
+@app.route('/priority/chat', methods=['POST'])
+def priority_chat():
+    cleanup_files()
+    user_message = request.form.get('message', '')
+    image = request.files.get('image')
+    image_data = image.read() if image else None
+    response = get_assistant_response(user_message, image_data)
+    return jsonify({'response': response})
+
+@app.route('/priority/end_conversation', methods=['POST'])
+def priority_end_conversation():
+    if 'files' in session:
+        for file in session['files']:
+            try:
+                client.files.delete(file['id'])
+            except Exception as e:
+                print(f"Error deleting file {file['id']}: {e}")
+    session.clear()
+    return jsonify({'message': 'Conversation ended and resources cleaned up.'})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

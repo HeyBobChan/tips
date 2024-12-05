@@ -111,8 +111,9 @@ app = Flask(__name__)
 app.secret_key = 'b2e9c2e0f7ad4f91b5b84a2952d90b0c'
 
 # Initialize OpenAI client
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-assistant_id = os.environ.get('OPENAI_ASSISTANT_ID')
+
+client = OpenAI() 
+assistant_id = os.getenv('OPENAI_ASSISTANT_ID')
 FILE_TIMEOUT = timedelta(minutes=2)
 
 def check_db_connection(f):

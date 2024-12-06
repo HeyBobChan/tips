@@ -219,8 +219,9 @@ def get_daily_data(restaurant_id, date):
             return jsonify({"error": "Restaurant not found"}), 404
 
         date_obj = datetime.strptime(date, '%Y-%m-%d')
-        day_of_week = date_obj.strftime('%A').lower()  # e.g., 'saturday'
+        day_of_week = date_obj.strftime('%A').lower()
         min_hourly_rate = restaurant_config['min_hourly_rate']
+        compensation_type = restaurant_config.get('compensation_type', 'round_up')
 
         if isinstance(min_hourly_rate, dict):
             MIN_HOURLY_RATE = min_hourly_rate.get(day_of_week, min_hourly_rate.get('default', 50))
@@ -248,9 +249,13 @@ def get_daily_data(restaurant_id, date):
         # Calculate daily average tips per hour
         avg_tips_per_hour = round(total_tips / total_hours, 2) if total_hours > 0 else 0
         
-        # Calculate compensation if needed
-        compensation_needed = max(0, MIN_HOURLY_RATE - avg_tips_per_hour)
-        total_compensation = round(compensation_needed * total_hours, 2)
+        # Calculate compensation based on type
+        if compensation_type == 'additive':
+            compensation_per_hour = MIN_HOURLY_RATE
+            total_compensation = round(compensation_per_hour * total_hours, 2)
+        else:  # round_up
+            compensation_needed = max(0, MIN_HOURLY_RATE - avg_tips_per_hour)
+            total_compensation = round(compensation_needed * total_hours, 2)
         
         # Calculate each employee's share
         for emp in employees:
@@ -258,7 +263,12 @@ def get_daily_data(restaurant_id, date):
             emp["cashTips"] = round(total_cash_tips * hours_fraction, 2)
             emp["creditTips"] = round(total_credit_tips * hours_fraction, 2)
             emp["totalTips"] = round(emp["cashTips"] + emp["creditTips"], 2)
-            emp["compensation"] = round(compensation_needed * emp["hours"], 2)
+            
+            if compensation_type == 'additive':
+                emp["compensation"] = round(compensation_per_hour * emp["hours"], 2)
+            else:  # round_up
+                emp["compensation"] = round(compensation_needed * emp["hours"], 2)
+            
             emp["finalTotal"] = round(emp["totalTips"] + emp["compensation"], 2)
             emp["effectiveHourly"] = round((emp["finalTotal"] / emp["hours"]) if emp["hours"] > 0 else 0, 2)
 
@@ -286,13 +296,14 @@ def get_monthly_data(restaurant_id, month):
             return jsonify({"error": "Restaurant not found"}), 404
 
         min_hourly_rate_config = restaurant_config['min_hourly_rate']
+        compensation_type = restaurant_config.get('compensation_type', 'round_up')
         start_date = datetime.strptime(f"{month}-01", '%Y-%m-%d')
         daily_entries = mongo_service.get_employees_for_month(start_date)
         
         # Group entries by date to handle daily tip pools
         daily_totals = {}
         for entry in daily_entries:
-            date_key = entry["date"].strftime('%Y-%m-%d')  # Convert datetime to string for dict key
+            date_key = entry["date"].strftime('%Y-%m-%d')
             if date_key not in daily_totals:
                 daily_totals[date_key] = {
                     "totalHours": 0,
@@ -300,9 +311,11 @@ def get_monthly_data(restaurant_id, month):
                     "totalCreditTips": 0,
                     "employees": []
                 }
+            
+            # Update totals
             daily_totals[date_key]["totalHours"] += entry["hours"]
-            daily_totals[date_key]["totalCashTips"] += entry["cashTips"]
-            daily_totals[date_key]["totalCreditTips"] += entry["creditTips"]
+            daily_totals[date_key]["totalCashTips"] += entry.get("cashTips", 0)  # Use get() with default 0
+            daily_totals[date_key]["totalCreditTips"] += entry.get("creditTips", 0)  # Use get() with default 0
             daily_totals[date_key]["employees"].append(entry)
 
         # Calculate monthly totals per employee
@@ -322,19 +335,23 @@ def get_monthly_data(restaurant_id, month):
             else:
                 min_rate = min_hourly_rate_config
 
-            # Use min_rate in calculations
             total_hours = day_data["totalHours"]
             total_cash = day_data["totalCashTips"]
             total_credit = day_data["totalCreditTips"]
             total_tips = total_cash + total_credit
 
-            avg_tips_per_hour = total_tips / total_hours if total_hours > 0 else 0
-            compensation_needed = max(0, min_rate - avg_tips_per_hour)
-            daily_compensation = compensation_needed * total_hours
-
             monthly_total_hours += total_hours
             monthly_total_cash += total_cash
             monthly_total_credit += total_credit
+
+            # Calculate compensation based on type
+            if compensation_type == 'additive':
+                daily_compensation = min_rate * total_hours
+            else:  # round_up
+                avg_tips_per_hour = total_tips / total_hours if total_hours > 0 else 0
+                compensation_needed = max(0, min_rate - avg_tips_per_hour)
+                daily_compensation = compensation_needed * total_hours
+
             monthly_total_compensation += daily_compensation
 
             # Calculate each employee's share for this day
@@ -349,15 +366,15 @@ def get_monthly_data(restaurant_id, month):
                         "compensation": 0
                     }
                 
+                hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
                 employee_totals[name]["hours"] += emp["hours"]
-                employee_totals[name]["cashTips"] += emp["cashTips"]
-                employee_totals[name]["creditTips"] += emp["creditTips"]
+                employee_totals[name]["cashTips"] += total_cash * hours_fraction
+                employee_totals[name]["creditTips"] += total_credit * hours_fraction
                 
-                if total_hours > 0:
-                    hours_fraction = emp["hours"] / total_hours
-                    emp_tips_per_hour = (emp["cashTips"] + emp["creditTips"]) / emp["hours"] if emp["hours"] > 0 else 0
-                    emp_compensation_needed = max(0, min_rate - emp_tips_per_hour)
-                    employee_totals[name]["compensation"] += emp_compensation_needed * emp["hours"]
+                if compensation_type == 'additive':
+                    employee_totals[name]["compensation"] += min_rate * emp["hours"]
+                else:  # round_up
+                    employee_totals[name]["compensation"] += compensation_needed * emp["hours"]
 
         # Convert to list and round values
         employee_list = []

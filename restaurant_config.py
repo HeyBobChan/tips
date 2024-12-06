@@ -12,15 +12,23 @@ RESTAURANTS = {
         'min_hourly_rate': {
             'default': 50,
             'saturday': 75  # Different rate on Saturdays
-        }
+        },
+        'compensation_type': 'round_up'  # Default behavior
     },
     'anan': {
         'name': 'Anan Restaurant',
-                'min_hourly_rate': 80
+        'min_hourly_rate': 80,
+        'compensation_type': 'round_up'
     },
     'test': {
         'name': 'Test Restaurant',
-        'min_hourly_rate': 50
+        'min_hourly_rate': 50,
+        'compensation_type': 'round_up'
+    },
+    'additive_test': {
+        'name': 'Additive Test Restaurant',
+        'min_hourly_rate': 50,
+        'compensation_type': 'additive'  # New behavior
     }
 }
 

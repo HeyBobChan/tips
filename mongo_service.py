@@ -99,6 +99,9 @@ class MongoService:
     def get_employees_for_date(self, date):
         """Example of using restaurant-specific collection"""
         collection = self.db[self.get_collection_name('dailyEntries')]
+        # Convert string date to datetime if needed
+        if isinstance(date, str):
+            date = datetime.strptime(date, '%Y-%m-%d')
         entry = collection.find_one({"date": date})
         return entry['employees'] if entry else []
 

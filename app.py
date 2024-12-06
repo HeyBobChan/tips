@@ -292,18 +292,18 @@ def get_monthly_data(restaurant_id, month):
         # Group entries by date to handle daily tip pools
         daily_totals = {}
         for entry in daily_entries:
-            date = entry["date"]
-            if date not in daily_totals:
-                daily_totals[date] = {
+            date_key = entry["date"].strftime('%Y-%m-%d')  # Convert datetime to string for dict key
+            if date_key not in daily_totals:
+                daily_totals[date_key] = {
                     "totalHours": 0,
                     "totalCashTips": 0,
                     "totalCreditTips": 0,
                     "employees": []
                 }
-            daily_totals[date]["totalHours"] += entry["hours"]
-            daily_totals[date]["totalCashTips"] += entry["cashTips"]
-            daily_totals[date]["totalCreditTips"] += entry["creditTips"]
-            daily_totals[date]["employees"].append(entry)
+            daily_totals[date_key]["totalHours"] += entry["hours"]
+            daily_totals[date_key]["totalCashTips"] += entry["cashTips"]
+            daily_totals[date_key]["totalCreditTips"] += entry["creditTips"]
+            daily_totals[date_key]["employees"].append(entry)
 
         # Calculate monthly totals per employee
         employee_totals = {}

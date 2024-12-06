@@ -254,3 +254,48 @@ class MongoService:
         except Exception as e:
             print(f"Error in upsert_employee_hours: {str(e)}")
             raise
+
+    def get_active_shift(self, worker_name):
+        """Get current active shift for a worker"""
+        collection = self.db[self.get_collection_name('activeShifts')]
+        return collection.find_one({
+            "name": worker_name,
+            "end_time": None
+        })
+
+    def start_shift(self, worker_name):
+        """Start a new shift"""
+        if self.get_active_shift(worker_name):
+            raise ValueError("Already clocked in")
+        
+        collection = self.db[self.get_collection_name('activeShifts')]
+        return collection.insert_one({
+            "name": worker_name,
+            "start_time": datetime.now(),
+            "end_time": None
+        })
+
+    def end_shift(self, worker_name):
+        """End current shift and create hours entry"""
+        shift = self.get_active_shift(worker_name)
+        if not shift:
+            raise ValueError("No active shift found")
+        
+        end_time = datetime.now()
+        duration = end_time - shift['start_time']
+        hours = duration.total_seconds() / 3600
+        
+        # Update shift record
+        collection = self.db[self.get_collection_name('activeShifts')]
+        collection.update_one(
+            {"_id": shift['_id']},
+            {"$set": {"end_time": end_time}}
+        )
+        
+        # Create hours entry
+        return self.upsert_employee_hours(end_time.date(), {
+            "name": worker_name,
+            "hours": round(hours, 2),
+            "cashTips": 0,
+            "creditTips": 0
+        })

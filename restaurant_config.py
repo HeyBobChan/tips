@@ -27,7 +27,7 @@ RESTAURANTS = {
     },
     'additive_test': {
         'name': 'Additive Test Restaurant',
-        'min_hourly_rate': 50,
+        'min_hourly_rate': 40,
         'compensation_type': 'additive'  # New behavior
     }
 }

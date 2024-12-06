@@ -563,6 +563,15 @@ def priority_end_conversation():
     session.clear()
     return jsonify({'message': 'Conversation ended and resources cleaned up.'})
 
+@app.route('/<restaurant_id>/worker-portal')
+def worker_portal(restaurant_id):
+    restaurant_config = get_restaurant_config(restaurant_id)
+    if not restaurant_config:
+        return "Restaurant not found", 404
+    return render_template('worker_portal.html', 
+                         restaurant=restaurant_config,
+                         js_file='worker_portal.js')
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)

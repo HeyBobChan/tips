@@ -505,11 +505,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Hours / שעות
                         </th>
-                        ${data.has_saturday_rate ? `
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Saturday Hours / שעות שבת
-                            </th>
-                        ` : ''}
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Saturday Hours / שעות שבת
+                        </th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Cash Tips / טיפים במזומן
                         </th>
@@ -536,11 +534,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
                                 ${emp.hours.toFixed(2)}
                             </td>
-                            ${data.has_saturday_rate ? `
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                                    ${emp.saturday_hours?.toFixed(2) || '0.00'}
-                                </td>
-                            ` : ''}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                                ${(emp.saturday_hours || 0).toFixed(2)}
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
                                 ₪${emp.cashTips.toFixed(2)}
                             </td>

@@ -245,7 +245,7 @@ def get_daily_data(restaurant_id, date):
                 "employees": []
             })
 
-        # Get total hours and tips for the day
+        # Calculate totals
         total_hours = sum(e["hours"] for e in employees)
         total_cash_tips = sum(e["cashTips"] for e in employees)
         total_credit_tips = sum(e["creditTips"] for e in employees)
@@ -253,14 +253,27 @@ def get_daily_data(restaurant_id, date):
         
         # Calculate daily average tips per hour
         avg_tips_per_hour = round(total_tips / total_hours, 2) if total_hours > 0 else 0
-        
-        # Calculate compensation based on type
-        if compensation_type == 'additive':
-            compensation_per_hour = MIN_HOURLY_RATE
-            total_compensation = round(compensation_per_hour * total_hours, 2)
-        else:  # round_up
-            compensation_needed = max(0, MIN_HOURLY_RATE - avg_tips_per_hour)
-            total_compensation = round(compensation_needed * total_hours, 2)
+
+        # Special handling for Shapira
+        if restaurant_id == 'shapira':
+            tips_threshold = restaurant_config.get('tips_threshold', 10)
+            tips_per_hour = total_tips / total_hours if total_hours > 0 else 0
+            
+            if tips_per_hour < tips_threshold:
+                # If tips are below threshold, compensate up to base_rate
+                compensation_needed = max(0, MIN_HOURLY_RATE - avg_tips_per_hour)
+                total_compensation = round(compensation_needed * total_hours, 2)
+            else:
+                # If tips are above threshold, provide fixed compensation
+                total_compensation = round(30 * total_hours, 2)
+        else:
+            # Original compensation logic for other restaurants
+            if compensation_type == 'additive':
+                compensation_per_hour = MIN_HOURLY_RATE
+                total_compensation = round(compensation_per_hour * total_hours, 2)
+            else:  # round_up
+                compensation_needed = max(0, MIN_HOURLY_RATE - avg_tips_per_hour)
+                total_compensation = round(compensation_needed * total_hours, 2)
         
         # Calculate each employee's share
         for emp in employees:
@@ -269,10 +282,17 @@ def get_daily_data(restaurant_id, date):
             emp["creditTips"] = round(total_credit_tips * hours_fraction, 2)
             emp["totalTips"] = round(emp["cashTips"] + emp["creditTips"], 2)
             
-            if compensation_type == 'additive':
-                emp["compensation"] = round(compensation_per_hour * emp["hours"], 2)
-            else:  # round_up
-                emp["compensation"] = round(compensation_needed * emp["hours"], 2)
+            if restaurant_id == 'shapira':
+                if tips_per_hour < tips_threshold:
+                    emp_compensation_needed = max(0, MIN_HOURLY_RATE - (emp["totalTips"] / emp["hours"]))
+                    emp["compensation"] = round(emp_compensation_needed * emp["hours"], 2)
+                else:
+                    emp["compensation"] = round(30 * emp["hours"], 2)
+            else:
+                if compensation_type == 'additive':
+                    emp["compensation"] = round(compensation_per_hour * emp["hours"], 2)
+                else:  # round_up
+                    emp["compensation"] = round(compensation_needed * emp["hours"], 2)
             
             emp["finalTotal"] = round(emp["totalTips"] + emp["compensation"], 2)
             emp["effectiveHourly"] = round((emp["finalTotal"] / emp["hours"]) if emp["hours"] > 0 else 0, 2)
@@ -360,17 +380,31 @@ def get_monthly_data(restaurant_id, month):
             monthly_total_cash += total_cash
             monthly_total_credit += total_credit
 
-            # Calculate compensation based on type
-            if compensation_type == 'additive':
-                daily_compensation = min_rate * total_hours
-            else:  # round_up
-                avg_tips_per_hour = total_tips / total_hours if total_hours > 0 else 0
-                compensation_needed = max(0, min_rate - avg_tips_per_hour)
-                daily_compensation = compensation_needed * total_hours
+            # Calculate daily tips per hour
+            daily_tips_per_hour = total_tips / total_hours if total_hours > 0 else 0
+
+            # Special handling for Shapira
+            if restaurant_id == 'shapira':
+                tips_threshold = restaurant_config.get('tips_threshold', 10)
+                
+                if daily_tips_per_hour < tips_threshold:
+                    # If tips are below threshold, compensate up to base_rate
+                    daily_compensation_needed = max(0, min_rate - daily_tips_per_hour)
+                    daily_compensation = round(daily_compensation_needed * total_hours, 2)
+                else:
+                    # If tips are above threshold, provide fixed compensation
+                    daily_compensation = round(30 * total_hours, 2)
+            else:
+                # Original compensation logic for other restaurants
+                if compensation_type == 'additive':
+                    daily_compensation = min_rate * total_hours
+                else:  # round_up
+                    daily_compensation_needed = max(0, min_rate - daily_tips_per_hour)
+                    daily_compensation = round(daily_compensation_needed * total_hours, 2)
 
             monthly_total_compensation += daily_compensation
 
-            # Calculate each employee's share for this day
+            # Calculate employee shares
             for emp in day_data["employees"]:
                 name = emp["name"]
                 if name not in employee_totals:
@@ -380,20 +414,28 @@ def get_monthly_data(restaurant_id, month):
                         "cashTips": 0,
                         "creditTips": 0,
                         "compensation": 0,
-                        "saturday_hours": 0  # Add this field
+                        "saturday_hours": 0
                     }
                 
-                hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
+                emp_hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
                 employee_totals[name]["hours"] += emp["hours"]
-                employee_totals[name]["cashTips"] += total_cash * hours_fraction
-                employee_totals[name]["creditTips"] += total_credit * hours_fraction
+                employee_totals[name]["cashTips"] += total_cash * emp_hours_fraction
+                employee_totals[name]["creditTips"] += total_credit * emp_hours_fraction
                 
-                if compensation_type == 'additive':
-                    employee_totals[name]["compensation"] += min_rate * emp["hours"]
-                else:  # round_up
-                    employee_totals[name]["compensation"] += compensation_needed * emp["hours"]
-
-                # Add Saturday hours if applicable
+                # Calculate this employee's compensation
+                if restaurant_id == 'shapira':
+                    if daily_tips_per_hour < tips_threshold:
+                        emp_daily_compensation = daily_compensation_needed * emp["hours"]
+                    else:
+                        emp_daily_compensation = 30 * emp["hours"]
+                else:
+                    if compensation_type == 'additive':
+                        emp_daily_compensation = min_rate * emp["hours"]
+                    else:  # round_up
+                        emp_daily_compensation = daily_compensation_needed * emp["hours"]
+                
+                employee_totals[name]["compensation"] += round(emp_daily_compensation, 2)
+                
                 if day_of_week == 'saturday':
                     employee_totals[name]["saturday_hours"] += emp["hours"]
 

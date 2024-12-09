@@ -11,7 +11,7 @@ RESTAURANTS = {
         'name': 'Dama Restaurant',
         'min_hourly_rate': {
             'default': 50,
-            'saturday': 75  # Different rate on Saturdays
+            'saturday_multiplier': 1.5  # Changed from fixed 75 to 1.5x multiplier
         },
         'compensation_type': 'round_up'  # Default behavior
     },
@@ -28,7 +28,18 @@ RESTAURANTS = {
     'additive_test': {
         'name': 'Additive Test Restaurant',
         'min_hourly_rate': 40,
-        'compensation_type': 'additive'  # New behavior
+        'compensation_type': 'additive'
+    },
+    'shapira': {
+        'name': 'Shapira Restaurant',
+        'min_hourly_rate': {
+            'default': 40,
+            'saturday_multiplier': 1.5
+        },
+        'compensation_type': 'additive',
+        'tips_threshold': 10,
+        'tips_type': 'threshold',
+        'hidden': True
     }
 }
 

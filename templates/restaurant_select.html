@@ -11,10 +11,12 @@
         <h1 class="text-3xl font-bold mb-6">Select Restaurant</h1>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             {% for id, config in restaurants.items() %}
-            <a href="/{{ id }}/" 
-               class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
-                <h2 class="text-xl font-semibold">{{ config.name }}</h2>
-            </a>
+                {% if not config.get('hidden', False) %}
+                <a href="/{{ id }}/" 
+                   class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+                    <h2 class="text-xl font-semibold">{{ config.name }}</h2>
+                </a>
+                {% endif %}
             {% endfor %}
         </div>
     </div>

@@ -318,12 +318,18 @@ def get_monthly_data(restaurant_id, month):
             daily_totals[date_key]["totalCreditTips"] += entry.get("creditTips", 0)  # Use get() with default 0
             daily_totals[date_key]["employees"].append(entry)
 
-        # Calculate monthly totals per employee
+        # Initialize employee_totals with saturday_hours
         employee_totals = {}
         monthly_total_hours = 0
         monthly_total_cash = 0
         monthly_total_credit = 0
         monthly_total_compensation = 0
+
+        # Check if restaurant has different Saturday rates
+        has_saturday_rate = (
+            isinstance(restaurant_config['min_hourly_rate'], dict) and 
+            'saturday' in restaurant_config['min_hourly_rate']
+        )
 
         # Calculate daily distributions and compensations
         for date, day_data in daily_totals.items():
@@ -363,7 +369,8 @@ def get_monthly_data(restaurant_id, month):
                         "hours": 0,
                         "cashTips": 0,
                         "creditTips": 0,
-                        "compensation": 0
+                        "compensation": 0,
+                        "saturday_hours": 0  # Add this field
                     }
                 
                 hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
@@ -375,6 +382,10 @@ def get_monthly_data(restaurant_id, month):
                     employee_totals[name]["compensation"] += min_rate * emp["hours"]
                 else:  # round_up
                     employee_totals[name]["compensation"] += compensation_needed * emp["hours"]
+
+                # Add Saturday hours if applicable
+                if day_of_week == 'saturday':
+                    employee_totals[name]["saturday_hours"] += emp["hours"]
 
         # Convert to list and round values
         employee_list = []
@@ -396,7 +407,8 @@ def get_monthly_data(restaurant_id, month):
             "totalCashTips": round(monthly_total_cash, 2),
             "totalCreditTips": round(monthly_total_credit, 2),
             "totalCompensation": round(monthly_total_compensation, 2),
-            "employeeTotals": employee_list
+            "employeeTotals": employee_list,
+            "has_saturday_rate": has_saturday_rate  # Add this flag
         }
         
         return jsonify(monthly_data)

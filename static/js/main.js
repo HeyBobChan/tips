@@ -495,87 +495,71 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       return `
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Employee / עובד
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hours / שעות
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Cash Tips / טיפים במזומן
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Credit Tips / טיפים באשראי
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Compensation / השלמה
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Avg Hourly / ממוצע לשעה
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total / סה״כ
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              ${data.employeeTotals.map(emp => {
-                const avgHourly = emp.hours > 0 ? emp.finalTotal / emp.hours : 0;
-                return `
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      ${emp.name}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                      ${emp.hours.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                      ₪${emp.cashTips.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                      ₪${emp.creditTips.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                      ₪${emp.compensation.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                      ₪${avgHourly.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                      ₪${emp.finalTotal.toFixed(2)}
-                    </td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-            <tfoot class="bg-gray-50">
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Totals / סה״כ</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                  ${data.totalHours.toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                  ₪${data.totalCashTips.toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                  ₪${data.totalCreditTips.toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                  ₪${data.totalCompensation.toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                  ₪${(data.totalHours > 0 ? (data.totalCashTips + data.totalCreditTips + data.totalCompensation) / data.totalHours : 0).toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                  ₪${(data.totalCashTips + data.totalCreditTips + data.totalCompensation).toFixed(2)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+        <div class="bg-white shadow-lg rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name / שם
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Hours / שעות
+                        </th>
+                        ${data.has_saturday_rate ? `
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Saturday Hours / שעות שבת
+                            </th>
+                        ` : ''}
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Cash Tips / טיפים במזומן
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Credit Tips / טיפים באשראי
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Compensation / השלמה
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Avg Hourly / ממוצע לשעה
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total / סה״כ
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    ${data.employeeTotals.map(emp => `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                ${emp.name}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                                ${emp.hours.toFixed(2)}
+                            </td>
+                            ${data.has_saturday_rate ? `
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                                    ${emp.saturday_hours?.toFixed(2) || '0.00'}
+                                </td>
+                            ` : ''}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                                ₪${emp.cashTips.toFixed(2)}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                                ₪${emp.creditTips.toFixed(2)}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                                ₪${emp.compensation.toFixed(2)}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                                ₪${emp.avgHourly.toFixed(2)}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                                ₪${emp.finalTotal.toFixed(2)}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
         </div>
       `;
     }
@@ -664,15 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generateMonthlyCSV(data) {
-      if (!data?.employeeTotals?.length) {
-        return 'No data available / אין נתונים זמינים\n';
-      }
-
-      // Get all unique keys from employee totals
-      const employeeFields = Object.keys(data.employeeTotals[0]).filter(key => !key.startsWith('_'));
-
-      // Create headers with both English and Hebrew labels
-      const headerLabels = {
+      const baseHeaderLabels = {
         name: 'Employee / עובד',
         hours: 'Hours / שעות',
         cashTips: 'Cash Tips / טיפים במזומן',
@@ -681,12 +657,17 @@ document.addEventListener('DOMContentLoaded', function() {
         finalTotal: 'Final Total / סה״כ'
       };
 
+      // Add saturday_hours to headers only if relevant
+      const headerLabels = data.has_saturday_rate ? 
+        { ...baseHeaderLabels, saturday_hours: 'Saturday Hours / שעות שבת' } : 
+        baseHeaderLabels;
+
       // Create CSV header row
-      const headers = employeeFields.map(field => headerLabels[field] || field).join(',') + '\n';
+      const headers = Object.keys(headerLabels).map(field => headerLabels[field] || field).join(',') + '\n';
 
       // Create employee rows
       const rows = data.employeeTotals.map(emp => 
-        employeeFields.map(field => {
+        Object.keys(headerLabels).map(field => {
           const value = emp[field];
           // Format numbers to 2 decimal places if numeric
           return typeof value === 'number' ? value.toFixed(2) : value;

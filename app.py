@@ -224,7 +224,12 @@ def get_daily_data(restaurant_id, date):
         compensation_type = restaurant_config.get('compensation_type', 'round_up')
 
         if isinstance(min_hourly_rate, dict):
-            MIN_HOURLY_RATE = min_hourly_rate.get(day_of_week, min_hourly_rate.get('default', 50))
+            base_rate = min_hourly_rate.get('default', 50)
+            if day_of_week == 'saturday':
+                multiplier = min_hourly_rate.get('saturday_multiplier', 1.0)
+                MIN_HOURLY_RATE = base_rate * multiplier
+            else:
+                MIN_HOURLY_RATE = base_rate
         else:
             MIN_HOURLY_RATE = min_hourly_rate
 
@@ -337,7 +342,12 @@ def get_monthly_data(restaurant_id, month):
             day_of_week = date_obj.strftime('%A').lower()
 
             if isinstance(min_hourly_rate_config, dict):
-                min_rate = min_hourly_rate_config.get(day_of_week, min_hourly_rate_config.get('default', 50))
+                base_rate = min_hourly_rate_config.get('default', 50)
+                if day_of_week == 'saturday':
+                    multiplier = min_hourly_rate_config.get('saturday_multiplier', 1.0)
+                    min_rate = base_rate * multiplier
+                else:
+                    min_rate = base_rate
             else:
                 min_rate = min_hourly_rate_config
 

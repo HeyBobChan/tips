@@ -3,17 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tips Management</title>
+    <title>Tips Management System</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Add any custom styles here */
+        body {
+            background-color: #f3f4f6;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    {% block content %}{% endblock %}
-    
-    <!-- Add your JavaScript files here -->
-    {% if request.endpoint == 'worker_portal' %}
-    <script src="{{ url_for('static', filename='js/worker_portal.js') }}"></script>
-    {% else %}
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    {% endif %}
+<body>
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="/" class="text-xl font-bold text-gray-800">Tips Management</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <a href="/select" class="text-gray-600 hover:text-gray-900">
+                        All Restaurants / כל המסעדות
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-white shadow-sm mt-8">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-500 text-sm">
+                Tips Management System
+            </p>
+        </div>
+    </footer>
 </body>
 </html> 

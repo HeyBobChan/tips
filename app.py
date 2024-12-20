@@ -1,9 +1,15 @@
-from flask import Flask, request, jsonify, render_template, session
+from flask import Flask, request, jsonify, render_template, session, redirect
 from mongo_service import MongoService
 from datetime import datetime
 import json
 import os
-from restaurant_config import get_restaurant_config, RESTAURANTS
+from restaurant_config import (
+    get_restaurant_config, 
+    get_all_restaurants,
+    create_restaurant,
+    update_restaurant
+)
+from init_restaurant import init_restaurant
 from functools import wraps
 import atexit
 from openai import OpenAI
@@ -11,6 +17,7 @@ import time
 import tempfile
 import re
 from datetime import datetime, timedelta
+import calendar
 
 
 def wait_on_run(run, thread):
@@ -107,6 +114,26 @@ def cleanup_files():
         session['files'] = files_to_keep
         session.modified = True
 
+def get_worker_wage(mongo_service, worker_name, base_rate, day_of_week, saturday_multiplier=None):
+    """Helper function to get worker's wage rate"""
+    # Check for worker-specific wage
+    wages_collection = mongo_service.db[mongo_service.get_collection_name('worker_wages')]
+    worker_wage = wages_collection.find_one({"worker_name": worker_name})
+    
+    if worker_wage and 'base_wage' in worker_wage:
+        base_rate = worker_wage['base_wage']
+    
+    # Apply Saturday multiplier if applicable
+    if day_of_week == 'saturday' and saturday_multiplier:
+        return base_rate * saturday_multiplier
+    
+    return base_rate
+
+def has_individual_wages(mongo_service):
+    """Helper function to check if any individual wages exist"""
+    wages_collection = mongo_service.db[mongo_service.get_collection_name('worker_wages')]
+    return wages_collection.count_documents({}) > 0
+
 app = Flask(__name__)
 app.secret_key = 'b2e9c2e0f7ad4f91b5b84a2952d90b0c'
 
@@ -148,6 +175,42 @@ def check_db_connection(f):
             }), 503
     return decorated_function
 
+def check_layout_access(f):
+    @wraps(f)
+    def decorated_function(restaurant_id, *args, **kwargs):
+        restaurant_config = get_restaurant_config(restaurant_id)
+        if not restaurant_config:
+            return "Restaurant not found", 404
+            
+        # If layout is closed, only allow access to specific endpoints
+        if restaurant_config.get('layout_type') == 'closed':
+            # List of allowed endpoints for closed layout
+            allowed_endpoints = [
+                'add_entry',
+                'add_hours',
+                'add_tips',
+                'get_workers',
+                'add_worker',
+                'restaurant_index',
+                'restaurant_bill',
+                # API endpoints
+                'get_daily_data',
+                'get_monthly_data',
+                'get_employees_for_date',
+                'get_employees_for_month'
+            ]
+            
+            # Allow all API endpoints
+            if request.path.startswith(f'/{restaurant_id}/api/'):
+                return f(restaurant_id, *args, **kwargs)
+            
+            # If not an allowed endpoint and not the bill page, redirect to bill
+            if request.endpoint not in allowed_endpoints:
+                return redirect(f'/{restaurant_id}/bill')
+                
+        return f(restaurant_id, *args, **kwargs)
+    return decorated_function
+
 @app.route('/')
 def index():
     return render_template('landing.html')
@@ -155,16 +218,173 @@ def index():
 @app.route('/select')
 def select():
     # Show list of available restaurants
-    return render_template('restaurant_select.html', restaurants=RESTAURANTS)
+    restaurants = get_all_restaurants()
+    return render_template('restaurant_select.html', restaurants=restaurants)
+
+@app.route('/create-restaurant', methods=['GET', 'POST'])
+def create_restaurant_page():
+    if request.method == 'POST':
+        restaurant_id = request.form.get('restaurant_id')
+        name = request.form.get('name')
+        min_hourly_rate = request.form.get('min_hourly_rate')
+        saturday_multiplier = request.form.get('saturday_multiplier')
+        compensation_type = request.form.get('compensation_type')
+        tips_threshold = request.form.get('tips_threshold')
+        tips_type = request.form.get('tips_type')
+        layout_type = request.form.get('layout_type', 'open')  # Default to 'open'
+        
+        config = {
+            'name': name,
+            'min_hourly_rate': float(min_hourly_rate) if not saturday_multiplier else {
+                'default': float(min_hourly_rate),
+                'saturday_multiplier': float(saturday_multiplier)
+            },
+            'compensation_type': compensation_type,
+            'layout_type': layout_type  # Add layout_type to config
+        }
+        
+        if tips_threshold:
+            config['tips_threshold'] = float(tips_threshold)
+        if tips_type:
+            config['tips_type'] = tips_type
+            
+        try:
+            create_restaurant(restaurant_id, config)
+            # Initialize the restaurant's workers collection
+            init_restaurant(restaurant_id)
+            return redirect(f'/{restaurant_id}/admin')
+        except Exception as e:
+            return render_template('create_restaurant.html', error=str(e))
+            
+    return render_template('create_restaurant.html')
+
+@app.route('/<restaurant_id>/admin', methods=['GET', 'POST'])
+def admin_page(restaurant_id):
+    restaurant_config = get_restaurant_config(restaurant_id)
+    if not restaurant_config:
+        return "Restaurant not found", 404
+        
+    mongo_service = MongoService.get_instance(restaurant_id)
+        
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'update_config':
+            min_hourly_rate = request.form.get('min_hourly_rate')
+            saturday_multiplier = request.form.get('saturday_multiplier')
+            compensation_type = request.form.get('compensation_type')
+            tips_threshold = request.form.get('tips_threshold')
+            tips_type = request.form.get('tips_type')
+            layout_type = request.form.get('layout_type')
+            
+            config = restaurant_config.copy()
+            config['min_hourly_rate'] = float(min_hourly_rate) if not saturday_multiplier else {
+                'default': float(min_hourly_rate),
+                'saturday_multiplier': float(saturday_multiplier)
+            }
+            config['compensation_type'] = compensation_type
+            config['layout_type'] = layout_type
+            
+            if tips_threshold:
+                config['tips_threshold'] = float(tips_threshold)
+            if tips_type:
+                config['tips_type'] = tips_type
+                
+            update_restaurant(restaurant_id, config)
+            return redirect(f'/{restaurant_id}/admin')
+            
+        elif action == 'add_worker':
+            worker_name = request.form.get('worker_name')
+            if worker_name:
+                collection = mongo_service.db[mongo_service.get_collection_name('workers')]
+                collection.update_one(
+                    {}, 
+                    {"$addToSet": {"workers": worker_name}},
+                    upsert=True
+                )
+                
+        elif action == 'remove_worker':
+            worker_name = request.form.get('worker_name')
+            if worker_name:
+                # Remove worker from workers list
+                collection = mongo_service.db[mongo_service.get_collection_name('workers')]
+                collection.update_one(
+                    {}, 
+                    {"$pull": {"workers": worker_name}}
+                )
+                
+                # Remove worker's wage configuration if exists
+                wages_collection = mongo_service.db[mongo_service.get_collection_name('worker_wages')]
+                wages_collection.delete_one({"worker_name": worker_name})
+                
+        elif action == 'update_worker_wage':
+            worker_name = request.form.get('worker_name')
+            base_wage = request.form.get('base_wage')
+            
+            if worker_name:
+                wages_collection = mongo_service.db[mongo_service.get_collection_name('worker_wages')]
+                if base_wage and float(base_wage) > 0:
+                    # Update or insert worker's wage
+                    wages_collection.update_one(
+                        {"worker_name": worker_name},
+                        {"$set": {
+                            "worker_name": worker_name,
+                            "base_wage": float(base_wage)
+                        }},
+                        upsert=True
+                    )
+                else:
+                    # If base_wage is empty or 0, remove custom wage
+                    wages_collection.delete_one({"worker_name": worker_name})
+                
+    # Get current workers and their wages
+    workers = mongo_service.get_workers()
+    
+    # Get worker-specific wages
+    wages_collection = mongo_service.db[mongo_service.get_collection_name('worker_wages')]
+    worker_wages = {
+        wage['worker_name']: wage 
+        for wage in wages_collection.find({})
+    }
+    
+    return render_template(
+        'admin.html',
+        restaurant=restaurant_config,
+        restaurant_id=restaurant_id,
+        workers=workers,
+        worker_wages=worker_wages
+    )
 
 @app.route('/<restaurant_id>/')
+@check_layout_access
 def restaurant_index(restaurant_id):
     restaurant_config = get_restaurant_config(restaurant_id)
     if not restaurant_config:
         return "Restaurant not found", 404
-    return render_template('index.html', restaurant=restaurant_config)
+        
+    # Pass today's date to the template
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    # Use different template based on layout type
+    template = 'index_closed.html' if restaurant_config.get('layout_type') == 'closed' else 'index.html'
+    return render_template(template, restaurant=restaurant_config, today=today)
+
+@app.route('/<restaurant_id>/bill')
+def restaurant_bill(restaurant_id):
+    restaurant_config = get_restaurant_config(restaurant_id)
+    if not restaurant_config:
+        return "Restaurant not found", 404
+    
+    # Only allow access to bill page if layout is closed
+    if restaurant_config.get('layout_type') != 'closed':
+        return redirect(f'/{restaurant_id}/')
+    
+    # Pass today's date to the template
+    today = datetime.now().strftime('%Y-%m-%d')
+    return render_template('bill.html', restaurant=restaurant_config, today=today)
 
 @app.route('/<restaurant_id>/api/tips/AddEntry', methods=['POST'])
+@check_layout_access
 def add_entry(restaurant_id):
     try:
         mongo_service = MongoService.get_instance(restaurant_id)
@@ -174,15 +394,13 @@ def add_entry(restaurant_id):
         # Check if worker exists and add if new
         workers = mongo_service.get_workers()
         if data['name'] not in workers:
-            workers_file = os.path.join(os.path.dirname(__file__), 'config', restaurant_id, 'workers.json')
-            with open(workers_file, 'r', encoding='utf-8') as f:
-                workers_data = json.load(f)
-            
-            workers_data['workers'].append(data['name'])
-            workers_data['workers'].sort()  # Keep the list alphabetically sorted
-            
-            with open(workers_file, 'w', encoding='utf-8') as f:
-                json.dump(workers_data, f, indent=4, ensure_ascii=False)
+            mongo_service = MongoService.get_instance(restaurant_id)
+            collection = mongo_service.db[mongo_service.get_collection_name('workers')]
+            collection.update_one(
+                {}, 
+                {"$addToSet": {"workers": data['name']}},
+                upsert=True
+            )
         
         # Convert date from YYYY-MM-DD to DD/MM/YYYY
         input_date = datetime.strptime(data['date'], '%Y-%m-%d')
@@ -223,15 +441,13 @@ def get_daily_data(restaurant_id, date):
         min_hourly_rate = restaurant_config['min_hourly_rate']
         compensation_type = restaurant_config.get('compensation_type', 'round_up')
 
+        # Get base rate and Saturday multiplier
         if isinstance(min_hourly_rate, dict):
             base_rate = min_hourly_rate.get('default', 50)
-            if day_of_week == 'saturday':
-                multiplier = min_hourly_rate.get('saturday_multiplier', 1.0)
-                MIN_HOURLY_RATE = base_rate * multiplier
-            else:
-                MIN_HOURLY_RATE = base_rate
+            saturday_multiplier = min_hourly_rate.get('saturday_multiplier', 1.0)
         else:
-            MIN_HOURLY_RATE = min_hourly_rate
+            base_rate = min_hourly_rate
+            saturday_multiplier = None
 
         employees = mongo_service.get_employees_for_date(date_obj)
         
@@ -254,48 +470,51 @@ def get_daily_data(restaurant_id, date):
         # Calculate daily average tips per hour
         avg_tips_per_hour = round(total_tips / total_hours, 2) if total_hours > 0 else 0
 
-        # Special handling for Shapira
-        if restaurant_id == 'shapira':
-            tips_threshold = restaurant_config.get('tips_threshold', 10)
-            tips_per_hour = total_tips / total_hours if total_hours > 0 else 0
-            
-            if tips_per_hour < tips_threshold:
-                # If tips are below threshold, compensate up to base_rate
-                compensation_needed = max(0, MIN_HOURLY_RATE - avg_tips_per_hour)
-                total_compensation = round(compensation_needed * total_hours, 2)
-            else:
-                # If tips are above threshold, provide fixed compensation
-                total_compensation = round(30 * total_hours, 2)
-        else:
-            # Original compensation logic for other restaurants
-            if compensation_type == 'additive':
-                compensation_per_hour = MIN_HOURLY_RATE
-                total_compensation = round(compensation_per_hour * total_hours, 2)
-            else:  # round_up
-                compensation_needed = max(0, MIN_HOURLY_RATE - avg_tips_per_hour)
-                total_compensation = round(compensation_needed * total_hours, 2)
-        
-        # Calculate each employee's share
+        # Check if we need to look up individual wages
+        has_individual = has_individual_wages(mongo_service)
+
+        total_compensation = 0
+        # Calculate each employee's share and compensation
         for emp in employees:
             hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
             emp["cashTips"] = round(total_cash_tips * hours_fraction, 2)
             emp["creditTips"] = round(total_credit_tips * hours_fraction, 2)
             emp["totalTips"] = round(emp["cashTips"] + emp["creditTips"], 2)
             
+            # Get worker's wage rate - skip individual wage check if none exist
+            if has_individual:
+                worker_rate = get_worker_wage(
+                    mongo_service, 
+                    emp["name"], 
+                    base_rate, 
+                    day_of_week, 
+                    saturday_multiplier
+                )
+            else:
+                # Use default rate with Saturday multiplier if applicable
+                worker_rate = base_rate * saturday_multiplier if day_of_week == 'saturday' and saturday_multiplier else base_rate
+            
+            # Special handling for Shapira
             if restaurant_id == 'shapira':
+                tips_threshold = restaurant_config.get('tips_threshold', 10)
+                tips_per_hour = emp["totalTips"] / emp["hours"] if emp["hours"] > 0 else 0
+                
                 if tips_per_hour < tips_threshold:
-                    emp_compensation_needed = max(0, MIN_HOURLY_RATE - (emp["totalTips"] / emp["hours"]))
+                    emp_compensation_needed = max(0, worker_rate - (emp["totalTips"] / emp["hours"]))
                     emp["compensation"] = round(emp_compensation_needed * emp["hours"], 2)
                 else:
                     emp["compensation"] = round(30 * emp["hours"], 2)
             else:
                 if compensation_type == 'additive':
-                    emp["compensation"] = round(compensation_per_hour * emp["hours"], 2)
+                    emp["compensation"] = round(worker_rate * emp["hours"], 2)
                 else:  # round_up
-                    emp["compensation"] = round(compensation_needed * emp["hours"], 2)
+                    emp_tips_per_hour = emp["totalTips"] / emp["hours"] if emp["hours"] > 0 else 0
+                    emp_compensation_needed = max(0, worker_rate - emp_tips_per_hour)
+                    emp["compensation"] = round(emp_compensation_needed * emp["hours"], 2)
             
             emp["finalTotal"] = round(emp["totalTips"] + emp["compensation"], 2)
             emp["effectiveHourly"] = round((emp["finalTotal"] / emp["hours"]) if emp["hours"] > 0 else 0, 2)
+            total_compensation += emp["compensation"]
 
         daily_data = {
             "totalHours": round(total_hours, 2),
@@ -303,7 +522,7 @@ def get_daily_data(restaurant_id, date):
             "totalCreditTips": round(total_credit_tips, 2),
             "totalTips": round(total_tips, 2),
             "avgTipsPerHour": avg_tips_per_hour,
-            "compensation": total_compensation,
+            "compensation": round(total_compensation, 2),
             "employees": employees
         }
         
@@ -320,62 +539,61 @@ def get_monthly_data(restaurant_id, month):
         if not restaurant_config:
             return jsonify({"error": "Restaurant not found"}), 404
 
-        min_hourly_rate_config = restaurant_config['min_hourly_rate']
+        # Get configuration
+        min_hourly_rate = restaurant_config['min_hourly_rate']
         compensation_type = restaurant_config.get('compensation_type', 'round_up')
+        
+        # Get base rate and Saturday multiplier
+        if isinstance(min_hourly_rate, dict):
+            base_rate = min_hourly_rate.get('default', 50)
+            saturday_multiplier = min_hourly_rate.get('saturday_multiplier', 1.0)
+            has_saturday_rate = True
+        else:
+            base_rate = min_hourly_rate
+            saturday_multiplier = None
+            has_saturday_rate = False
+
+        # Get monthly entries
         start_date = datetime.strptime(f"{month}-01", '%Y-%m-%d')
         daily_entries = mongo_service.get_employees_for_month(start_date)
-        
-        # Group entries by date to handle daily tip pools
-        daily_totals = {}
-        for entry in daily_entries:
-            date_key = entry["date"].strftime('%Y-%m-%d')
-            if date_key not in daily_totals:
-                daily_totals[date_key] = {
-                    "totalHours": 0,
-                    "totalCashTips": 0,
-                    "totalCreditTips": 0,
-                    "employees": []
-                }
-            
-            # Update totals
-            daily_totals[date_key]["totalHours"] += entry["hours"]
-            daily_totals[date_key]["totalCashTips"] += entry.get("cashTips", 0)  # Use get() with default 0
-            daily_totals[date_key]["totalCreditTips"] += entry.get("creditTips", 0)  # Use get() with default 0
-            daily_totals[date_key]["employees"].append(entry)
 
-        # Initialize employee_totals with saturday_hours
+        # Initialize tracking variables
         employee_totals = {}
         monthly_total_hours = 0
         monthly_total_cash = 0
         monthly_total_credit = 0
         monthly_total_compensation = 0
 
-        # Check if restaurant has different Saturday rates
-        has_saturday_rate = (
-            isinstance(restaurant_config['min_hourly_rate'], dict) and 
-            'saturday' in restaurant_config['min_hourly_rate']
-        )
+        # Check if we need to look up individual wages
+        has_individual = has_individual_wages(mongo_service)
 
-        # Calculate daily distributions and compensations
-        for date, day_data in daily_totals.items():
-            date_obj = datetime.strptime(date, '%Y-%m-%d')
-            day_of_week = date_obj.strftime('%A').lower()
+        # Group entries by date
+        daily_totals = {}
+        for entry in daily_entries:
+            date_key = entry["date"].strftime('%Y-%m-%d')
+            if date_key not in daily_totals:
+                daily_totals[date_key] = {
+                    "date": entry["date"],
+                    "totalHours": 0,
+                    "totalCashTips": 0,
+                    "totalCreditTips": 0,
+                    "employees": []
+                }
+            
+            daily_totals[date_key]["totalHours"] += entry["hours"]
+            daily_totals[date_key]["totalCashTips"] += entry.get("cashTips", 0)
+            daily_totals[date_key]["totalCreditTips"] += entry.get("creditTips", 0)
+            daily_totals[date_key]["employees"].append(entry)
 
-            if isinstance(min_hourly_rate_config, dict):
-                base_rate = min_hourly_rate_config.get('default', 50)
-                if day_of_week == 'saturday':
-                    multiplier = min_hourly_rate_config.get('saturday_multiplier', 1.0)
-                    min_rate = base_rate * multiplier
-                else:
-                    min_rate = base_rate
-            else:
-                min_rate = min_hourly_rate_config
-
+        # Process each day
+        for date_key, day_data in daily_totals.items():
+            day_of_week = day_data["date"].strftime('%A').lower()
             total_hours = day_data["totalHours"]
             total_cash = day_data["totalCashTips"]
             total_credit = day_data["totalCreditTips"]
             total_tips = total_cash + total_credit
 
+            # Update monthly totals
             monthly_total_hours += total_hours
             monthly_total_cash += total_cash
             monthly_total_credit += total_credit
@@ -383,28 +601,7 @@ def get_monthly_data(restaurant_id, month):
             # Calculate daily tips per hour
             daily_tips_per_hour = total_tips / total_hours if total_hours > 0 else 0
 
-            # Special handling for Shapira
-            if restaurant_id == 'shapira':
-                tips_threshold = restaurant_config.get('tips_threshold', 10)
-                
-                if daily_tips_per_hour < tips_threshold:
-                    # If tips are below threshold, compensate up to base_rate
-                    daily_compensation_needed = max(0, min_rate - daily_tips_per_hour)
-                    daily_compensation = round(daily_compensation_needed * total_hours, 2)
-                else:
-                    # If tips are above threshold, provide fixed compensation
-                    daily_compensation = round(30 * total_hours, 2)
-            else:
-                # Original compensation logic for other restaurants
-                if compensation_type == 'additive':
-                    daily_compensation = min_rate * total_hours
-                else:  # round_up
-                    daily_compensation_needed = max(0, min_rate - daily_tips_per_hour)
-                    daily_compensation = round(daily_compensation_needed * total_hours, 2)
-
-            monthly_total_compensation += daily_compensation
-
-            # Calculate employee shares
+            # Process each employee's data for this day
             for emp in day_data["employees"]:
                 name = emp["name"]
                 if name not in employee_totals:
@@ -416,30 +613,53 @@ def get_monthly_data(restaurant_id, month):
                         "compensation": 0,
                         "saturday_hours": 0
                     }
-                
+
+                # Calculate employee's share of tips
                 emp_hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
-                employee_totals[name]["hours"] += emp["hours"]
-                employee_totals[name]["cashTips"] += total_cash * emp_hours_fraction
-                employee_totals[name]["creditTips"] += total_credit * emp_hours_fraction
-                
-                # Calculate this employee's compensation
+                emp_cash = total_cash * emp_hours_fraction
+                emp_credit = total_credit * emp_hours_fraction
+
+                # Get worker's wage rate - skip individual wage check if none exist
+                if has_individual:
+                    worker_rate = get_worker_wage(
+                        mongo_service,
+                        name,
+                        base_rate,
+                        day_of_week,
+                        saturday_multiplier
+                    )
+                else:
+                    # Use default rate with Saturday multiplier if applicable
+                    worker_rate = base_rate * saturday_multiplier if day_of_week == 'saturday' and saturday_multiplier else base_rate
+
+                # Calculate compensation
                 if restaurant_id == 'shapira':
-                    if daily_tips_per_hour < tips_threshold:
-                        emp_daily_compensation = daily_compensation_needed * emp["hours"]
+                    tips_threshold = restaurant_config.get('tips_threshold', 10)
+                    emp_tips_per_hour = (emp_cash + emp_credit) / emp["hours"] if emp["hours"] > 0 else 0
+                    
+                    if emp_tips_per_hour < tips_threshold:
+                        emp_compensation = max(0, worker_rate - emp_tips_per_hour) * emp["hours"]
                     else:
-                        emp_daily_compensation = 30 * emp["hours"]
+                        emp_compensation = 30 * emp["hours"]
                 else:
                     if compensation_type == 'additive':
-                        emp_daily_compensation = min_rate * emp["hours"]
+                        emp_compensation = worker_rate * emp["hours"]
                     else:  # round_up
-                        emp_daily_compensation = daily_compensation_needed * emp["hours"]
-                
-                employee_totals[name]["compensation"] += round(emp_daily_compensation, 2)
+                        emp_tips_per_hour = (emp_cash + emp_credit) / emp["hours"] if emp["hours"] > 0 else 0
+                        emp_compensation = max(0, worker_rate - emp_tips_per_hour) * emp["hours"]
+
+                # Update employee totals
+                employee_totals[name]["hours"] += emp["hours"]
+                employee_totals[name]["cashTips"] += emp_cash
+                employee_totals[name]["creditTips"] += emp_credit
+                employee_totals[name]["compensation"] += emp_compensation
                 
                 if day_of_week == 'saturday':
                     employee_totals[name]["saturday_hours"] += emp["hours"]
 
-        # Convert to list and round values
+                monthly_total_compensation += emp_compensation
+
+        # Format employee totals
         employee_list = []
         for emp in employee_totals.values():
             emp["hours"] = round(emp["hours"], 2)
@@ -451,19 +671,18 @@ def get_monthly_data(restaurant_id, month):
             emp["avgHourly"] = round(emp["finalTotal"] / emp["hours"], 2) if emp["hours"] > 0 else 0
             employee_list.append(emp)
 
-        # Sort employees by final total (highest to lowest)
+        # Sort by final total
         employee_list.sort(key=lambda x: x["finalTotal"], reverse=True)
 
-        monthly_data = {
+        return jsonify({
             "totalHours": round(monthly_total_hours, 2),
             "totalCashTips": round(monthly_total_cash, 2),
             "totalCreditTips": round(monthly_total_credit, 2),
             "totalCompensation": round(monthly_total_compensation, 2),
             "employeeTotals": employee_list,
-            "has_saturday_rate": has_saturday_rate  # Add this flag
-        }
-        
-        return jsonify(monthly_data)
+            "has_saturday_rate": has_saturday_rate
+        })
+
     except Exception as e:
         print(f"Error in monthly data: {str(e)}")
         import traceback
@@ -471,6 +690,7 @@ def get_monthly_data(restaurant_id, month):
         return jsonify({"error": str(e)}), 500
 
 @app.route('/<restaurant_id>/api/workers')
+@check_layout_access
 def get_workers(restaurant_id):
     try:
         mongo_service = MongoService.get_instance(restaurant_id)
@@ -481,6 +701,7 @@ def get_workers(restaurant_id):
         return jsonify([]), 500
 
 @app.route('/<restaurant_id>/api/workers/add', methods=['POST'])
+@check_layout_access
 def add_worker(restaurant_id):
     try:
         mongo_service = MongoService.get_instance(restaurant_id)
@@ -492,26 +713,22 @@ def add_worker(restaurant_id):
         if not new_name:
             return jsonify({"error": "Name cannot be empty"}), 400
 
-        workers_file = os.path.join(os.path.dirname(__file__), 'config', restaurant_id, 'workers.json')
-        with open(workers_file, 'r', encoding='utf-8') as f:
-            workers_data = json.load(f)
+        collection = mongo_service.db[mongo_service.get_collection_name('workers')]
+        collection.update_one(
+            {}, 
+            {"$addToSet": {"workers": new_name}},
+            upsert=True
+        )
 
-        if new_name in workers_data['workers']:
-            return jsonify({"error": "Worker already exists"}), 400
-
-        workers_data['workers'].append(new_name)
-        workers_data['workers'].sort()  # Keep the list alphabetically sorted
-
-        with open(workers_file, 'w', encoding='utf-8') as f:
-            json.dump(workers_data, f, indent=4, ensure_ascii=False)
-
-        return jsonify({"message": "Worker added successfully", "workers": workers_data['workers']})
+        # Get updated list of workers
+        workers = mongo_service.get_workers()
+        return jsonify({"message": "Worker added successfully", "workers": workers})
     except Exception as e:
         print(f"Error adding worker: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/<restaurant_id>/api/tips/AddHours', methods=['POST'])
-@check_db_connection
+@check_layout_access
 def add_hours(restaurant_id):
     try:
         mongo_service = MongoService.get_instance(restaurant_id)
@@ -553,6 +770,7 @@ def add_hours(restaurant_id):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/<restaurant_id>/api/tips/AddTips', methods=['POST'])
+@check_layout_access
 def add_tips(restaurant_id):
     try:
         mongo_service = MongoService.get_instance(restaurant_id)

@@ -257,11 +257,17 @@ class MongoService:
 
     def get_active_shift(self, worker_name):
         """Get current active shift for a worker"""
-        collection = self.db[self.get_collection_name('activeShifts')]
-        return collection.find_one({
-            "name": worker_name,
-            "end_time": None
-        })
+        try:
+            collection = self.db[self.get_collection_name('activeShifts')]
+            shift = collection.find_one({
+                "name": worker_name,
+                "end_time": None
+            })
+            print(f"Active shift query for {worker_name}: {shift}")  # Debug log
+            return shift
+        except Exception as e:
+            print(f"Error in get_active_shift for {worker_name}: {str(e)}")  # Debug log
+            raise
 
     def start_shift(self, worker_name):
         """Start a new shift"""
@@ -277,25 +283,37 @@ class MongoService:
 
     def end_shift(self, worker_name):
         """End current shift and create hours entry"""
-        shift = self.get_active_shift(worker_name)
-        if not shift:
-            raise ValueError("No active shift found")
-        
-        end_time = datetime.now()
-        duration = end_time - shift['start_time']
-        hours = duration.total_seconds() / 3600
-        
-        # Update shift record
-        collection = self.db[self.get_collection_name('activeShifts')]
-        collection.update_one(
-            {"_id": shift['_id']},
-            {"$set": {"end_time": end_time}}
-        )
-        
-        # Create hours entry
-        return self.upsert_employee_hours(end_time.date(), {
-            "name": worker_name,
-            "hours": round(hours, 2),
-            "cashTips": 0,
-            "creditTips": 0
-        })
+        try:
+            print(f"Attempting to end shift for {worker_name}")  # Debug log
+            shift = self.get_active_shift(worker_name)
+            if not shift:
+                print(f"No active shift found for {worker_name}")  # Debug log
+                raise ValueError("No active shift found")
+            
+            print(f"Found active shift: {shift}")  # Debug log
+            end_time = datetime.now()
+            duration = end_time - shift['start_time']
+            hours = duration.total_seconds() / 3600
+            
+            # Update shift record
+            collection = self.db[self.get_collection_name('activeShifts')]
+            result = collection.update_one(
+                {"_id": shift['_id']},
+                {"$set": {"end_time": end_time}}
+            )
+            print(f"Update result: {result.modified_count} document(s) modified")  # Debug log
+            
+            # Create hours entry
+            employee_data = {
+                "name": worker_name,
+                "hours": round(hours, 2),
+                "cashTips": 0,
+                "creditTips": 0
+            }
+            print(f"Creating hours entry with data: {employee_data}")  # Debug log
+            
+            with self.session_scope() as session:
+                return self.upsert_employee_hours(end_time.date(), employee_data, session)
+        except Exception as e:
+            print(f"Error in end_shift for {worker_name}: {str(e)}")  # Debug log
+            raise

@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="w-full max-w-6xl mx-auto p-8">
+    <div class="bg-white shadow-lg rounded-lg p-8">
+        <h1 class="text-3xl font-bold mb-8">System Overview / סקירת מערכת</h1>
+        
+        <!-- System Description -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4">About the System / אודות המערכת</h2>
+            <p class="text-gray-700 mb-4">
+                This is a comprehensive restaurant management system designed to handle tips distribution and work hours tracking.
+                The system supports multiple restaurants with different configurations and layouts.
+            </p>
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <p class="text-yellow-700">
+                    <strong>Security Note:</strong> This page should be password protected to restrict access to development and sales team members only.
+                    (Currently not implemented)
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4">Quick Links / קישורים מהירים</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="/create-restaurant" class="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100">
+                    <h3 class="font-semibold text-blue-700">Create New Restaurant / יצירת מסעדה חדשה</h3>
+                    <p class="text-sm text-gray-600">Set up a new restaurant with custom configurations</p>
+                </a>
+                <a href="/select" class="block p-4 bg-green-50 rounded-lg hover:bg-green-100">
+                    <h3 class="font-semibold text-green-700">All Restaurants / כל המסעדות</h3>
+                    <p class="text-sm text-gray-600">View and access all registered restaurants</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Example Restaurants -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4">Example Restaurants / דוגמאות למסעדות</h2>
+            
+            <!-- Open Restaurant Example -->
+            <div class="mb-6">
+                <h3 class="font-semibold text-lg mb-2">Open Layout Example</h3>
+                <a href="/test/" class="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 mb-2">
+                    <span class="font-medium text-blue-700">/test/</span>
+                    <p class="text-sm text-gray-600">Open restaurant with full access to all features</p>
+                </a>
+                <a href="/test/worker-portal" class="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 mb-2">
+                    <span class="font-medium text-blue-700">/test/worker-portal</span>
+                    <p class="text-sm text-gray-600">Worker portal for time tracking and manual hours entry</p>
+                </a>
+            </div>
+
+            <!-- Closed Restaurant with Threshold -->
+            <div class="mb-6">
+                <h3 class="font-semibold text-lg mb-2">Closed Layout with Threshold Pay</h3>
+                <div class="space-y-2">
+                    <a href="/shapira/" class="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100">
+                        <span class="font-medium text-purple-700">/shapira/</span>
+                        <p class="text-sm text-gray-600">Closed restaurant with threshold-based compensation</p>
+                    </a>
+                    <a href="/shapira/bill" class="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100">
+                        <span class="font-medium text-purple-700">/shapira/bill</span>
+                        <p class="text-sm text-gray-600">Bill view for closed restaurant</p>
+                    </a>
+                    <a href="/shapira/admin" class="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100">
+                        <span class="font-medium text-purple-700">/shapira/admin</span>
+                        <p class="text-sm text-gray-600">Admin configuration panel</p>
+                    </a>
+                    
+                    <!-- Threshold Pay Example -->
+                    <div class="bg-yellow-50 p-4 rounded-lg mt-2">
+                        <h4 class="font-medium text-yellow-800 mb-2">Threshold Pay Example:</h4>
+                        <p class="text-sm text-yellow-700">
+                            With threshold pay (e.g., ₪10/hour threshold):
+                        </p>
+                        <div class="pl-4 mt-2 space-y-2 text-sm text-yellow-700">
+                            <p><strong>Scenario 1 - Below Threshold:</strong><br>
+                            Worker A works 3 hours and earns ₪24 in tips (₪8/hour).<br>
+                            Since it's below threshold, they get compensated up to minimum wage (₪50/hour).<br>
+                            Compensation = (₪50 - ₪8) × 3 hours = ₪126</p>
+                            
+                            <p><strong>Scenario 2 - Above Threshold:</strong><br>
+                            Worker B works 3 hours and earns ₪36 in tips (₪12/hour).<br>
+                            Since it's above threshold, they get fixed bonus (₪30/hour).<br>
+                            Compensation = ₪30 × 3 hours = ₪90</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additive Pay Restaurant -->
+            <div class="mb-6">
+                <h3 class="font-semibold text-lg mb-2">Additive Pay System</h3>
+                <a href="/additive_test/admin" class="block p-4 bg-green-50 rounded-lg hover:bg-green-100">
+                    <span class="font-medium text-green-700">/additive_test/admin</span>
+                    <p class="text-sm text-gray-600">Restaurant with additive pay system</p>
+                </a>
+                
+                <!-- Pay System Comparison -->
+                <div class="bg-blue-50 p-4 rounded-lg mt-2">
+                    <h4 class="font-medium text-blue-800 mb-2">Pay System Comparison:</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <h5 class="font-medium text-blue-700">Top-up System:</h5>
+                            <p class="text-blue-600">Ensures minimum wage by compensating the difference if tips are low.<br>
+                            Example: If minimum wage is ₪50/hour and tips are ₪30/hour, worker gets ₪20/hour compensation.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-blue-700">Additive System:</h5>
+                            <p class="text-blue-600">Adds fixed hourly rate on top of all tips.<br>
+                            Example: With ₪50/hour base rate, worker gets ₪50/hour plus all tips, regardless of tip amount.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Core Features -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4">Core Features / תכונות עיקריות</h2>
+            
+            <div class="space-y-6">
+                <!-- Restaurant Configuration -->
+                <div class="border-l-4 border-blue-500 pl-4">
+                    <h3 class="font-semibold text-lg mb-2">Restaurant Configuration</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>Two layout types: Open (full access) and Closed (restricted access)</li>
+                        <li>Customizable hourly rates with Saturday multiplier option</li>
+                        <li>Flexible tips distribution systems (Standard or Threshold-based)</li>
+                        <li>Worker management with individual wage settings</li>
+                    </ul>
+                </div>
+
+                <!-- Tips Management -->
+                <div class="border-l-4 border-green-500 pl-4">
+                    <h3 class="font-semibold text-lg mb-2">Tips Management</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>Two compensation types: Round Up and Additive</li>
+                        <li>Tips threshold system for minimum wage guarantee</li>
+                        <li>Individual worker tip participation settings</li>
+                    </ul>
+                </div>
+
+                <!-- Work Hours -->
+                <div class="border-l-4 border-purple-500 pl-4">
+                    <h3 class="font-semibold text-lg mb-2">Work Hours Tracking</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>Daily work hours logging</li>
+                        <li>Special handling for Saturday shifts</li>
+                        <li>Automatic wage calculations based on hours and tips</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Requirements -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4">System Requirements / דרישות מערכת</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Current Features -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-lg mb-2">Current Features</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>Multi-restaurant support</li>
+                        <li>Bilingual interface (English/Hebrew)</li>
+                        <li>Custom wage configurations</li>
+                        <li>Tips distribution system</li>
+                    </ul>
+                </div>
+
+                <!-- Needed Features -->
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-lg mb-2">Needed Features</h3>
+                    <ul class="list-disc list-inside space-y-2 text-red-700">
+                        <li>System access logs and audit trails</li>
+                        <li>Password protection for admin pages</li>
+                        <li>Regular data backups</li>
+                        <li>Activity monitoring and reporting</li>
+                        <li>Comprehensive testing suite:
+                            <ul class="list-circle list-inside ml-4 mt-1 space-y-1 text-sm">
+                                <li>Unit tests for wage calculations</li>
+                                <li>Integration tests for API endpoints</li>
+                                <li>End-to-end testing for critical workflows</li>
+                                <li>Performance testing for large datasets</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Details -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4">Technical Details / פרטים טכניים</h2>
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <ul class="space-y-3 text-gray-700">
+                    <li><strong>Database:</strong> MongoDB (stores restaurant configs, workers, wages, tips)</li>
+                    <li><strong>Backend:</strong> Python Flask application</li>
+                    <li><strong>Frontend:</strong> HTML templates with Tailwind CSS</li>
+                    <li><strong>API Endpoints:</strong> Available for tips entry and data retrieval</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Development Notes -->
+        <div>
+            <h2 class="text-2xl font-semibold mb-4">Development Notes / הערות פיתוח</h2>
+            <div class="bg-yellow-50 p-6 rounded-lg space-y-4">
+                <p class="text-yellow-800">
+                    <strong>Priority Improvements Needed:</strong>
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-yellow-800">
+                    <li>Implement authentication system for admin access</li>
+                    <li>Add comprehensive logging system</li>
+                    <li>Set up automated backup solutions</li>
+                    <li>Create detailed API documentation</li>
+                    <li>Add data export functionality</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

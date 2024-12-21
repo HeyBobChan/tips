@@ -146,3 +146,116 @@ A comprehensive web application for managing restaurant tips, worker hours, and 
    - Shift swap requests
    - Announcement system
    - Employee feedback system 
+
+## Test Plan
+
+### 1. Database Connectivity Tests
+- [ ] Verify MongoDB connection on application startup
+- [ ] Test connection pooling under load
+- [ ] Validate database reconnection after connection loss
+- [ ] Check proper database session handling
+- [ ] Verify collection creation and access for new restaurants
+
+### 2. Restaurant Configuration Tests
+- [ ] Validate restaurant creation process
+- [ ] Test configuration updates:
+  - Base hourly rates
+  - Saturday multipliers
+  - Layout types
+  - Tips threshold settings
+- [ ] Verify multi-restaurant isolation
+- [ ] Test restaurant-specific collection naming
+- [ ] Validate configuration inheritance and overrides
+
+### 3. Worker Management Tests
+- [ ] Test worker addition and removal
+- [ ] Validate individual wage settings:
+  - Base rate overrides
+  - Special day rates
+  - Custom multipliers
+- [ ] Test worker portal access
+- [ ] Verify shift tracking:
+  - Clock in/out functionality
+  - Manual hours entry
+  - Shift overlap detection
+- [ ] Validate worker list synchronization
+
+### 4. Tips and Hours Calculations
+- [ ] Test daily tips calculations:
+  - Cash tips distribution
+  - Credit card tips processing
+  - Combined tips calculations
+- [ ] Verify hourly wage calculations:
+  - Regular hours
+  - Saturday hours with multiplier
+  - Special rate periods
+- [ ] Test total compensation calculations:
+  - Base wage + tips
+  - Threshold-based adjustments
+  - Individual rate applications
+- [ ] Validate monthly summaries
+- [ ] Test CSV export calculations
+
+### 5. UI/UX Testing
+- [ ] Test bilingual interface (Hebrew/English)
+- [ ] Verify responsive design on different devices
+- [ ] Validate form submissions and error handling
+- [ ] Test real-time updates
+- [ ] Verify date picker functionality
+- [ ] Test navigation and routing
+- [ ] Validate session management
+
+### 6. API Endpoint Tests
+- [ ] Test all REST endpoints:
+  - GET requests
+  - POST requests
+  - Error handling
+- [ ] Verify request validation
+- [ ] Test rate limiting
+- [ ] Validate response formats
+- [ ] Check authentication/authorization
+
+### 7. Data Validation Tests
+- [ ] Test input validation:
+  - Date formats
+  - Numeric inputs
+  - Text fields
+- [ ] Verify data type constraints
+- [ ] Test boundary conditions
+- [ ] Validate required fields
+- [ ] Test duplicate entry prevention
+
+### 8. Security Tests
+- [ ] Test access controls
+- [ ] Verify session security
+- [ ] Validate route protection
+- [ ] Test CSRF protection
+- [ ] Verify data isolation between restaurants
+
+### 9. Integration Tests
+- [ ] Test Priority Assistant integration
+- [ ] Verify OpenAI API integration
+- [ ] Test image upload functionality
+- [ ] Validate chat history
+- [ ] Test conversation management
+
+### 10. Performance Tests
+- [ ] Test application under load
+- [ ] Verify database query performance
+- [ ] Test concurrent user access
+- [ ] Validate response times
+- [ ] Check memory usage
+
+### Test Execution Guidelines
+1. Run tests in isolated environment
+2. Use test database for all operations
+3. Document any failures or unexpected behavior
+4. Verify fixes don't introduce new issues
+5. Maintain test data consistency
+
+### Critical Test Scenarios
+1. End-to-end tips calculation flow
+2. Worker hours tracking accuracy
+3. Multi-restaurant data isolation
+4. Security and access control
+5. Database consistency and reliability

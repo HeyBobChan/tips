@@ -31,7 +31,7 @@
             <!-- Content -->
             <div class="p-6">
                 <div id="hoursForm" class="space-y-6">
-                    <div class="grid grid-cols-1 gap-6">
+                    <form class="grid grid-cols-1 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">שם העובד / Name *</label>
                             <div class="mt-1 grid grid-cols-2 gap-4">
@@ -72,11 +72,11 @@
                                 Submit Hours / שלח שעות
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
                 
                 <div id="tipsForm" class="hidden space-y-4 sm:space-y-6">
-                    <div class="grid grid-cols-1 gap-4 sm:gap-6">
+                    <form class="grid grid-cols-1 gap-4 sm:gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">תאריך / Date *</label>
                             <input type="date" name="date" required value="{{ today }}"
@@ -101,7 +101,7 @@
                                 Submit Tips / שלח טיפים
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -109,12 +109,56 @@
 </div>
 
 <script>
-    // Tab switching
-    document.querySelectorAll('[data-view]').forEach(button => {
-        button.addEventListener('click', function() {
-            const view = this.dataset.view;
+    // Load workers for dropdown
+    async function populateWorkerSelect() {
+        try {
+            const restaurantId = window.location.pathname.split('/')[1];
+            const response = await fetch(`/${restaurantId}/api/workers`);
+            if (!response.ok) throw new Error('Failed to load workers');
+            const workers = await response.json();
             
-            // Update active tab
+            const select = document.getElementById('workerSelect');
+            if (select) {
+                select.innerHTML = '<option value="">-- Select Worker / בחר עובד --</option>';
+                workers.forEach(worker => {
+                    const option = document.createElement('option');
+                    option.value = worker;
+                    option.textContent = worker;
+                    select.appendChild(option);
+                });
+
+                // Add event listener to sync select with input
+                select.addEventListener('change', function() {
+                    const nameInput = document.getElementById('nameInput');
+                    if (nameInput) {
+                        nameInput.value = this.value;
+                    }
+                });
+
+                // Add event listener to clear select when typing in input
+                const nameInput = document.getElementById('nameInput');
+                if (nameInput) {
+                    nameInput.addEventListener('input', function() {
+                        if (this.value !== select.value) {
+                            select.value = '';
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error loading workers:', error);
+        }
+    }
+    
+    // Call populateWorkerSelect when the page loads and when switching to hours view
+    populateWorkerSelect();
+    
+    // Add event listener for view changes
+    document.querySelectorAll('[data-view]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const view = this.getAttribute('data-view');
+            
+            // Remove active state from all buttons
             document.querySelectorAll('[data-view]').forEach(btn => {
                 btn.classList.remove('border-b-2', 'border-blue-500', 'text-blue-500');
                 btn.classList.add('text-gray-500', 'hover:text-blue-500');
@@ -125,38 +169,69 @@
             // Show/hide forms
             document.getElementById('hoursForm').classList.toggle('hidden', view !== 'hours');
             document.getElementById('tipsForm').classList.toggle('hidden', view !== 'tips');
+            
+            // Populate worker select when switching to hours view
+            if (view === 'hours') {
+                populateWorkerSelect();
+            }
         });
     });
-    
-    // Load workers for dropdown
-    async function loadWorkers() {
+
+    // Add form submission handlers
+    document.querySelector('#hoursForm form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        const restaurantId = window.location.pathname.split('/')[1];
+
         try {
-            const response = await fetch('/{{ restaurant_id }}/api/workers');
-            if (!response.ok) throw new Error('Failed to load workers');
-            const workers = await response.json();
-            
-            const select = document.getElementById('workerSelect');
-            workers.forEach(worker => {
-                const option = document.createElement('option');
-                option.value = worker;
-                option.textContent = worker;
-                select.appendChild(option);
+            const response = await fetch(`/${restaurantId}/api/tips/AddHours`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to submit hours');
+            }
+
+            alert('Hours submitted successfully! / !השעות נשלחו בהצלחה');
+            this.reset();
+            populateWorkerSelect(); // Refresh worker list after submission
         } catch (error) {
-            console.error('Error loading workers:', error);
+            alert('Error submitting hours: ' + error.message);
+            console.error('Error details:', error);
         }
-    }
-    
-    loadWorkers();
-    
-    // Sync select with input
-    document.getElementById('workerSelect').addEventListener('change', function() {
-        document.getElementById('nameInput').value = this.value;
     });
-    
-    document.getElementById('nameInput').addEventListener('input', function() {
-        if (this.value !== document.getElementById('workerSelect').value) {
-            document.getElementById('workerSelect').value = '';
+
+    document.querySelector('#tipsForm form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        const restaurantId = window.location.pathname.split('/')[1];
+
+        try {
+            const response = await fetch(`/${restaurantId}/api/tips/AddTips`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to submit tips');
+            }
+
+            alert('Tips submitted successfully! / !הטיפים נשלחו בהצלחה');
+            this.reset();
+        } catch (error) {
+            alert('Error submitting tips: ' + error.message);
+            console.error('Error details:', error);
         }
     });
 </script>

@@ -184,6 +184,10 @@ def check_layout_access(f):
             
         # If layout is closed, only allow access to specific endpoints
         if restaurant_config.get('layout_type') == 'closed':
+            # Allow all API endpoints first
+            if request.path.startswith(f'/{restaurant_id}/api/'):
+                return f(restaurant_id, *args, **kwargs)
+                
             # List of allowed endpoints for closed layout
             allowed_endpoints = [
                 'add_entry',
@@ -193,16 +197,19 @@ def check_layout_access(f):
                 'add_worker',
                 'restaurant_index',
                 'restaurant_bill',
+                # Worker portal endpoints
+                'worker_portal',
+                'worker_login',
+                'worker_logout',
+                'get_current_shift',
+                'clock_in',
+                'clock_out',
                 # API endpoints
                 'get_daily_data',
                 'get_monthly_data',
                 'get_employees_for_date',
                 'get_employees_for_month'
             ]
-            
-            # Allow all API endpoints
-            if request.path.startswith(f'/{restaurant_id}/api/'):
-                return f(restaurant_id, *args, **kwargs)
             
             # If not an allowed endpoint and not the bill page, redirect to bill
             if request.endpoint not in allowed_endpoints:
@@ -214,6 +221,10 @@ def check_layout_access(f):
 @app.route('/')
 def index():
     return render_template('landing.html')
+
+@app.route('/supersuper')
+def supersuper():
+    return render_template('supersuper.html')
 
 @app.route('/select')
 def select():
@@ -865,6 +876,90 @@ def worker_portal(restaurant_id):
     return render_template('worker_portal.html', 
                          restaurant=restaurant_config,
                          js_file='worker_portal.js')
+
+@app.route('/<restaurant_id>/api/worker/login', methods=['POST'])
+@check_layout_access
+def worker_login(restaurant_id):
+    try:
+        data = request.json
+        if not data or 'name' not in data:
+            return jsonify({"error": "No name provided"}), 400
+            
+        session['worker_name'] = data['name']
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/<restaurant_id>/api/worker/logout', methods=['POST'])
+@check_layout_access
+def worker_logout(restaurant_id):
+    session.pop('worker_name', None)
+    return jsonify({"status": "success"})
+
+@app.route('/<restaurant_id>/api/worker/current-shift')
+@check_layout_access
+def get_current_shift(restaurant_id):
+    try:
+        if 'worker_name' not in session:
+            return jsonify({"active_shift": False})
+            
+        mongo_service = MongoService.get_instance(restaurant_id)
+        shift = mongo_service.get_active_shift(session['worker_name'])
+        
+        return jsonify({
+            "active_shift": bool(shift),
+            "start_time": shift['start_time'].isoformat() if shift else None
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/<restaurant_id>/api/worker/clock-in', methods=['POST'])
+@check_layout_access
+def clock_in(restaurant_id):
+    try:
+        if 'worker_name' not in session:
+            return jsonify({"error": "Not logged in"}), 401
+            
+        mongo_service = MongoService.get_instance(restaurant_id)
+        mongo_service.start_shift(session['worker_name'])
+        return jsonify({"status": "success"})
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/<restaurant_id>/api/worker/clock-out', methods=['POST'])
+@check_layout_access
+def clock_out(restaurant_id):
+    try:
+        if 'worker_name' not in session:
+            print(f"Clock-out attempt without worker_name in session")
+            return jsonify({"error": "Not logged in"}), 401
+            
+        worker_name = session['worker_name']
+        print(f"Attempting clock-out for {worker_name}")
+            
+        mongo_service = MongoService.get_instance(restaurant_id)
+        # Get active shift first to check duration
+        active_shift = mongo_service.get_active_shift(worker_name)
+        if not active_shift:
+            return jsonify({"error": "No active shift found"}), 400
+            
+        # Calculate duration before ending shift
+        duration = datetime.now() - active_shift['start_time']
+        if duration.total_seconds() < 60:  # Less than 1 minute
+            return jsonify({"error": "Shift duration too short (less than 1 minute)"}), 400
+            
+        # Proceed with ending shift if duration is valid
+        mongo_service.end_shift(worker_name)
+        print(f"Successfully clocked out {worker_name}")
+        return jsonify({"status": "success"})
+    except ValueError as e:
+        print(f"ValueError in clock-out for {worker_name}: {str(e)}")
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        print(f"Error in clock-out for {worker_name}: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

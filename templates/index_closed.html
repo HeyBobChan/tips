@@ -7,7 +7,7 @@
             <h1 class="text-2xl font-bold mb-6">{{ restaurant.name }}</h1>
             
             <!-- Tabs -->
-            <div class="grid grid-cols-2 border-b">
+            <div class="grid grid-cols-3 border-b">
                 <div class="col-span-1 border-r flex">
                     <button data-view="hours" class="w-full py-3 px-2 text-center flex flex-col items-center justify-center border-b-2 border-blue-500 text-blue-500">
                         <span class="hidden md:block w-full">Work Hours / שעות עבודה</span>
@@ -17,12 +17,21 @@
                         </span>
                     </button>
                 </div>
-                <div class="col-span-1 flex">
+                <div class="col-span-1 border-r flex">
                     <button data-view="tips" class="w-full py-3 px-2 text-center flex flex-col items-center justify-center text-gray-500 hover:text-blue-500">
                         <span class="hidden md:block w-full">Tips Entry / הכנסת טיפים</span>
                         <span class="md:hidden w-full">
                             <div class="text-xs font-medium">הכנסת טיפים</div>
                             <div class="text-xs">Tips Entry</div>
+                        </span>
+                    </button>
+                </div>
+                <div class="col-span-1 flex">
+                    <button data-view="allocation" class="w-full py-3 px-2 text-center flex flex-col items-center justify-center text-gray-500 hover:text-blue-500">
+                        <span class="hidden md:block w-full">Tips Allocation / חלוקת טיפים</span>
+                        <span class="md:hidden w-full">
+                            <div class="text-xs font-medium">חלוקת טיפים</div>
+                            <div class="text-xs">Tips Allocation</div>
                         </span>
                     </button>
                 </div>
@@ -56,12 +65,22 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">שעות / Hours *</label>
-                                <input type="number" name="hours" required min="0" max="24" step="0.5"
+                                <input type="number" 
+                                    name="hours" 
+                                    required 
+                                    min="0" 
+                                    max="24" 
+                                    step="0.5"
+                                    inputmode="numeric"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">דקות / Minutes</label>
-                                <input type="number" name="minutes" min="0" max="59"
+                                <input type="number" 
+                                    name="minutes" 
+                                    min="0" 
+                                    max="59"
+                                    inputmode="numeric"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                         </div>
@@ -102,6 +121,37 @@
                             </button>
                         </div>
                     </form>
+                </div>
+                
+                <div id="tipsAllocationView" class="hidden space-y-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold">Tips Allocation / חלוקת טיפים</h2>
+                        <input type="date" id="allocationDate" required value="{{ today }}"
+                            class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            onchange="loadTipsAllocation()">
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Worker / עובד</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours / שעות</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cash Tips Share / חלק בטיפים</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allocationTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Data will be populated here -->
+                            </tbody>
+                            <tfoot class="bg-gray-50">
+                                <tr>
+                                    <td class="px-6 py-4 font-medium">Total / סה״כ</td>
+                                    <td id="totalHours" class="px-6 py-4"></td>
+                                    <td id="totalCashTips" class="px-6 py-4"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -169,10 +219,13 @@
             // Show/hide forms
             document.getElementById('hoursForm').classList.toggle('hidden', view !== 'hours');
             document.getElementById('tipsForm').classList.toggle('hidden', view !== 'tips');
+            document.getElementById('tipsAllocationView').classList.toggle('hidden', view !== 'allocation');
             
             // Populate worker select when switching to hours view
             if (view === 'hours') {
                 populateWorkerSelect();
+            } else if (view === 'allocation') {
+                loadTipsAllocation();
             }
         });
     });
@@ -234,5 +287,43 @@
             console.error('Error details:', error);
         }
     });
+
+    // Function to load tips allocation data
+    async function loadTipsAllocation() {
+        try {
+            const date = document.getElementById('allocationDate').value;
+            const restaurantId = window.location.pathname.split('/')[1];
+            const response = await fetch(`/${restaurantId}/api/tips/allocation?date=${date}`);
+            
+            if (!response.ok) throw new Error('Failed to load allocation data');
+            const data = await response.json();
+            
+            const tbody = document.getElementById('allocationTableBody');
+            tbody.innerHTML = '';
+            
+            let totalHours = 0;
+            let totalCashTips = 0;
+            
+            data.workers.forEach(worker => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4">${worker.name}</td>
+                    <td class="px-6 py-4">${worker.hours.toFixed(2)}</td>
+                    <td class="px-6 py-4">₪${worker.cashTipsShare.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+                
+                totalHours += worker.hours;
+                totalCashTips += worker.cashTipsShare;
+            });
+            
+            document.getElementById('totalHours').textContent = totalHours.toFixed(2);
+            document.getElementById('totalCashTips').textContent = `₪${totalCashTips.toFixed(2)}`;
+            
+        } catch (error) {
+            console.error('Error loading allocation data:', error);
+            alert('Error loading allocation data: ' + error.message);
+        }
+    }
 </script>
 {% endblock %} 

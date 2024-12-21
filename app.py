@@ -499,45 +499,51 @@ def get_daily_data(restaurant_id, date):
         total_compensation = 0
         # Calculate each employee's share and compensation
         for emp in employees:
-            hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
-            emp["cashTips"] = round(total_cash_tips * hours_fraction, 2)
-            emp["creditTips"] = round(total_credit_tips * hours_fraction, 2)
-            emp["totalTips"] = round(emp["cashTips"] + emp["creditTips"], 2)
-            
-            # Get worker's wage rate - skip individual wage check if none exist
-            if has_individual:
-                worker_rate = get_worker_wage(
-                    mongo_service, 
-                    emp["name"], 
-                    base_rate, 
-                    day_of_week, 
-                    saturday_multiplier
-                )
-            else:
-                # Use default rate with Saturday multiplier if applicable
-                worker_rate = base_rate * saturday_multiplier if day_of_week == 'saturday' and saturday_multiplier else base_rate
-            
-            # Special handling for Shapira
-            if restaurant_id == 'shapira':
-                tips_threshold = restaurant_config.get('tips_threshold', 10)
-                tips_per_hour = emp["totalTips"] / emp["hours"] if emp["hours"] > 0 else 0
+            try:
+                hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
+                emp["cashTips"] = round(total_cash_tips * hours_fraction, 2)
+                emp["creditTips"] = round(total_credit_tips * hours_fraction, 2)
+                emp["totalTips"] = round(emp["cashTips"] + emp["creditTips"], 2)
                 
-                if tips_per_hour < tips_threshold:
-                    emp_compensation_needed = max(0, worker_rate - (emp["totalTips"] / emp["hours"]))
-                    emp["compensation"] = round(emp_compensation_needed * emp["hours"], 2)
+                # Get worker's wage rate - skip individual wage check if none exist
+                if has_individual:
+                    worker_rate = get_worker_wage(
+                        mongo_service, 
+                        emp["name"], 
+                        base_rate, 
+                        day_of_week, 
+                        saturday_multiplier
+                    )
                 else:
-                    emp["compensation"] = round(30 * emp["hours"], 2)
-            else:
-                if compensation_type == 'additive':
-                    emp["compensation"] = round(worker_rate * emp["hours"], 2)
-                else:  # round_up
-                    emp_tips_per_hour = emp["totalTips"] / emp["hours"] if emp["hours"] > 0 else 0
-                    emp_compensation_needed = max(0, worker_rate - emp_tips_per_hour)
-                    emp["compensation"] = round(emp_compensation_needed * emp["hours"], 2)
-            
-            emp["finalTotal"] = round(emp["totalTips"] + emp["compensation"], 2)
-            emp["effectiveHourly"] = round((emp["finalTotal"] / emp["hours"]) if emp["hours"] > 0 else 0, 2)
-            total_compensation += emp["compensation"]
+                    # Use default rate with Saturday multiplier if applicable
+                    worker_rate = base_rate * saturday_multiplier if day_of_week == 'saturday' and saturday_multiplier else base_rate
+
+                # Special handling for Shapira
+                if restaurant_id == 'shapira':
+                    tips_threshold = restaurant_config.get('tips_threshold', 10)
+                    tips_per_hour = emp["totalTips"] / emp["hours"] if emp["hours"] > 0 else 0
+                    
+                    if tips_per_hour < tips_threshold:
+                        emp_compensation_needed = max(0, worker_rate - tips_per_hour)
+                        emp["compensation"] = round(emp_compensation_needed * emp["hours"], 2)
+                    else:
+                        emp["compensation"] = round(30 * emp["hours"], 2)
+                else:
+                    if compensation_type == 'additive':
+                        emp["compensation"] = round(worker_rate * emp["hours"], 2)
+                    else:  # round_up
+                        emp_tips_per_hour = emp["totalTips"] / emp["hours"] if emp["hours"] > 0 else 0
+                        emp_compensation_needed = max(0, worker_rate - emp_tips_per_hour)
+                        emp["compensation"] = round(emp_compensation_needed * emp["hours"], 2)
+                
+                emp["finalTotal"] = round(emp["totalTips"] + emp["compensation"], 2)
+                emp["effectiveHourly"] = round((emp["finalTotal"] / emp["hours"]) if emp["hours"] > 0 else 0, 2)
+                total_compensation += emp["compensation"]
+            except Exception as emp_error:
+                print(f"Error processing employee {emp.get('name', 'unknown')}: {str(emp_error)}")
+                import traceback
+                traceback.print_exc()
+                raise Exception(f"Error processing employee {emp.get('name', 'unknown')}: {str(emp_error)}")
 
         daily_data = {
             "totalHours": round(total_hours, 2),
@@ -551,6 +557,9 @@ def get_daily_data(restaurant_id, date):
         
         return jsonify(daily_data)
     except Exception as e:
+        print(f"Error in daily data: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 @app.route('/<restaurant_id>/api/tips/monthly/<month>')
@@ -959,6 +968,59 @@ def clock_out(restaurant_id):
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         print(f"Error in clock-out for {worker_name}: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/<restaurant_id>/api/tips/allocation')
+@check_layout_access
+@check_db_connection
+def get_tips_allocation(restaurant_id):
+    try:
+        date = request.args.get('date')
+        if not date:
+            return jsonify({"error": "Date parameter is required"}), 400
+            
+        date_obj = datetime.strptime(date, '%Y-%m-%d')
+        
+        mongo_service = MongoService.get_instance(restaurant_id)
+        restaurant_config = get_restaurant_config(restaurant_id)
+        if not restaurant_config:
+            return jsonify({"error": "Restaurant not found"}), 404
+
+        # Get employees who worked on this date
+        employees = mongo_service.get_employees_for_date(date_obj)
+        if not employees:
+            return jsonify({
+                "workers": [],
+                "totalHours": 0,
+                "totalCashTips": 0
+            })
+
+        # Calculate totals
+        total_hours = sum(e["hours"] for e in employees)
+        total_cash_tips = sum(e.get("cashTips", 0) for e in employees)
+
+        # Calculate each worker's share based on hours
+        workers_data = []
+        for emp in employees:
+            hours_fraction = emp["hours"] / total_hours if total_hours > 0 else 0
+            cash_share = round(total_cash_tips * hours_fraction, 2)
+            
+            workers_data.append({
+                "name": emp["name"],
+                "hours": round(emp["hours"], 2),
+                "cashTipsShare": cash_share
+            })
+
+        return jsonify({
+            "workers": workers_data,
+            "totalHours": round(total_hours, 2),
+            "totalCashTips": round(total_cash_tips, 2)
+        })
+
+    except Exception as e:
+        print(f"Error in tips allocation: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

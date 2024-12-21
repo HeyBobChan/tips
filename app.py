@@ -320,6 +320,7 @@ def admin_page(restaurant_id):
         elif action == 'update_worker_wage':
             worker_name = request.form.get('worker_name')
             base_wage = request.form.get('base_wage')
+            tip_participation = request.form.get('tip_participation') == 'on'
             
             if worker_name:
                 wages_collection = mongo_service.db[mongo_service.get_collection_name('worker_wages')]
@@ -329,13 +330,24 @@ def admin_page(restaurant_id):
                         {"worker_name": worker_name},
                         {"$set": {
                             "worker_name": worker_name,
-                            "base_wage": float(base_wage)
+                            "base_wage": float(base_wage),
+                            "tip_participation": tip_participation
                         }},
                         upsert=True
                     )
                 else:
-                    # If base_wage is empty or 0, remove custom wage
-                    wages_collection.delete_one({"worker_name": worker_name})
+                    # If base_wage is empty or 0, remove custom wage but keep tip participation setting
+                    if tip_participation:
+                        wages_collection.update_one(
+                            {"worker_name": worker_name},
+                            {"$set": {
+                                "worker_name": worker_name,
+                                "tip_participation": tip_participation
+                            }},
+                            upsert=True
+                        )
+                    else:
+                        wages_collection.delete_one({"worker_name": worker_name})
                 
     # Get current workers and their wages
     workers = mongo_service.get_workers()

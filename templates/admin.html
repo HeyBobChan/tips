@@ -159,6 +159,12 @@
                                             value="{{ worker_wages.get(worker, {}).get('base_wage', '') }}"
                                             placeholder="{{ restaurant.min_hourly_rate.default if restaurant.min_hourly_rate is mapping else restaurant.min_hourly_rate }}"
                                             class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        <div class="flex items-center gap-1">
+                                            <input type="checkbox" name="tip_participation" id="tip_participation_{{ worker }}"
+                                                {% if worker_wages.get(worker, {}).get('tip_participation', True) %}checked{% endif %}
+                                                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                            <label for="tip_participation_{{ worker }}" class="text-sm text-gray-600">Tips / טיפים</label>
+                                        </div>
                                     </div>
                                     <button type="submit"
                                         class="text-blue-600 hover:text-blue-800 focus:outline-none text-sm">

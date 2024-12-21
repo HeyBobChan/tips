@@ -1,25 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="w-full max-w-6xl mx-auto p-2 sm:p-4">
+<div class="w-full max-w-6xl mx-auto p-2 sm:p-4" dir="rtl">
     <div class="bg-white shadow-lg rounded-lg">
         <div class="p-3 sm:p-6">
-            <h1 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">{{ restaurant.name }} - Admin Panel / פאנל ניהול</h1>
+            <h1 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-right">{{ restaurant.name }} - Admin Panel / פאנל ניהול</h1>
             
             <!-- Restaurant Configuration -->
             <div class="mb-6 sm:mb-8">
-                <h2 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Restaurant Configuration / הגדרות מסעדה</h2>
+                <h2 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-right">Restaurant Configuration / הגדרות מסעדה</h2>
                 <form method="POST" class="space-y-4 sm:space-y-6">
                     <input type="hidden" name="action" value="update_config">
                     
                     <div class="grid grid-cols-1 gap-4 sm:gap-6">
                         <!-- Layout Configuration -->
                         <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700">
+                            <label class="block text-sm font-medium text-gray-700 text-right">
                                 Layout Type / סוג תצוגה
-                                <span class="ml-1 text-gray-400">ℹ️</span>
+                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 left-0 sm:left-full sm:ml-2">
+                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
                                 Open: All features available to everyone.
                                 Closed: Hours and tips input only, summaries available at /restaurant/bill.
                             </div>
@@ -35,11 +35,11 @@
                         </div>
 
                         <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700">
+                            <label class="block text-sm font-medium text-gray-700 text-right">
                                 Base Hourly Rate / תעריף שעתי בסיסי
-                                <span class="ml-1 text-gray-400">ℹ️</span>
+                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 left-0 sm:left-full sm:ml-2">
+                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
                                 The minimum hourly rate that workers should earn (including tips). If workers earn less than this amount in tips, they will receive compensation to reach this rate.
                             </div>
                             <input type="number" name="min_hourly_rate" required min="0" step="0.01"
@@ -48,11 +48,11 @@
                         </div>
                         
                         <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700">
+                            <label class="block text-sm font-medium text-gray-700 text-right">
                                 Saturday Multiplier / מכפיל שבת
-                                <span class="ml-1 text-gray-400">ℹ️</span>
+                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 left-0 sm:left-full sm:ml-2">
+                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
                                 Multiplies the base hourly rate for Saturdays. For example, a value of 1.5 means workers earn 1.5 times the base rate on Saturdays. Leave empty for no Saturday bonus.
                             </div>
                             <input type="number" name="saturday_multiplier" min="1" step="0.1"
@@ -61,11 +61,11 @@
                         </div>
                         
                         <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700">
+                            <label class="block text-sm font-medium text-gray-700 text-right">
                                 Compensation Type / סוג פיצוי
-                                <span class="ml-1 text-gray-400">ℹ️</span>
+                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 left-0 sm:left-full sm:ml-2">
+                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
                                 Round Up: Compensates workers only if their tips are below the minimum rate.
                                 Additive: Always adds the base rate to tips, regardless of tip amount.
                             </div>
@@ -81,11 +81,11 @@
                         </div>
                         
                         <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700">
+                            <label class="block text-sm font-medium text-gray-700 text-right">
                                 Tips Threshold / סף טיפים
-                                <span class="ml-1 text-gray-400">ℹ️</span>
+                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 left-0 sm:left-full sm:ml-2">
+                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
                                 Used with threshold-based compensation. If tips per hour are below this amount, workers receive compensation up to the base rate. If above, they receive a fixed bonus per hour.
                             </div>
                             <input type="number" name="tips_threshold" min="0" step="0.01"
@@ -94,11 +94,11 @@
                         </div>
                         
                         <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700">
+                            <label class="block text-sm font-medium text-gray-700 text-right">
                                 Tips Type / סוג טיפים
-                                <span class="ml-1 text-gray-400">ℹ️</span>
+                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 left-0 sm:left-full sm:ml-2">
+                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
                                 Standard: Uses regular compensation rules based on minimum hourly rate.
                                 Threshold Based: Uses the tips threshold to determine compensation method.
                             </div>
@@ -125,15 +125,15 @@
             
             <!-- Workers Management -->
             <div>
-                <h2 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Workers Management / ניהול עובדים</h2>
+                <h2 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-right">Workers Management / ניהול עובדים</h2>
                 
                 <!-- Add Worker Form -->
                 <form method="POST" class="mb-4 sm:mb-6">
                     <input type="hidden" name="action" value="add_worker">
-                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-end">
                         <input type="text" name="worker_name" required
                             placeholder="New worker name / שם עובד חדש"
-                            class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-right">
                         <button type="submit"
                             class="w-full sm:w-auto bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
                             Add Worker / הוסף עובד
@@ -143,51 +143,50 @@
                 
                 <!-- Workers List with Wage Configuration -->
                 <div class="bg-gray-50 rounded-lg p-3 sm:p-4">
-                    <h3 class="text-base sm:text-lg font-medium mb-3 sm:mb-4">Current Workers / עובדים נוכחיים</h3>
+                    <h3 class="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-right">Current Workers / עובדים נוכחיים</h3>
                     {% if workers %}
                     <form method="POST" class="space-y-2">
-                        <input type="hidden" name="action" value="update_all_workers">
+                        <input type="hidden" name="action" value="update_worker_wage">
                         {% for worker in workers %}
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 px-3 sm:px-4 bg-white rounded-md shadow-sm">
-                            <span class="text-gray-900 mb-2 sm:mb-0">{{ worker }}</span>
                             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                                <button type="button"
+                                    class="w-full sm:w-auto text-red-600 hover:text-red-800 focus:outline-none py-1 px-2"
+                                    onclick="removeWorker('{{ worker }}')">
+                                    Remove / הסר
+                                </button>
+                                <button type="submit"
+                                    class="w-full sm:w-auto bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    Update / עדכן
+                                </button>
                                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-                                    <label class="text-sm text-gray-600">Base Wage / שכר בסיס:</label>
-                                    <input type="number" name="base_wage_{{ worker }}" min="0" step="0.01"
-                                        value="{{ worker_wages.get(worker, {}).get('base_wage', '') }}"
-                                        placeholder="{{ restaurant.min_hourly_rate.default if restaurant.min_hourly_rate is mapping else restaurant.min_hourly_rate }}"
-                                        class="w-full sm:w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <div class="flex items-center gap-1">
-                                        <input type="checkbox" name="tip_participation_{{ worker }}" id="tip_participation_{{ worker }}"
+                                        <label for="tip_participation_{{ worker }}" class="text-sm text-gray-600">Tips / טיפים</label>
+                                        <input type="checkbox" name="tip_participation" id="tip_participation_{{ worker }}"
                                             {% if worker_wages.get(worker, {}).get('tip_participation', True) %}checked{% endif %}
                                             class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                        <label for="tip_participation_{{ worker }}" class="text-sm text-gray-600">Tips / טיפים</label>
                                     </div>
+                                    <input type="number" name="base_wage" min="0" step="0.01"
+                                        value="{{ worker_wages.get(worker, {}).get('base_wage', '') }}"
+                                        placeholder="{{ restaurant.min_hourly_rate.default if restaurant.min_hourly_rate is mapping else restaurant.min_hourly_rate }}"
+                                        class="w-full sm:w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-right">
+                                    <label class="text-sm text-gray-600">Base Wage / שכר בסיס:</label>
                                 </div>
-                                <form method="POST" class="inline w-full sm:w-auto">
-                                    <input type="hidden" name="action" value="remove_worker">
-                                    <input type="hidden" name="worker_name" value="{{ worker }}">
-                                    <button type="submit"
-                                        class="w-full sm:w-auto text-red-600 hover:text-red-800 focus:outline-none py-1 px-2"
-                                        onclick="return confirm('Are you sure you want to remove this worker? / ?האם אתה בטוח שברצונך להסיר עובד זה')">
-                                        Remove / הסר
-                                    </button>
-                                </form>
+                                <input type="hidden" name="worker_name" value="{{ worker }}">
                             </div>
+                            <span class="text-gray-900 mb-2 sm:mb-0 text-right">{{ worker }}</span>
                         </div>
                         {% endfor %}
-                        <div class="mt-4 sm:mt-6 flex justify-end">
-                            <button type="submit"
-                                class="w-full sm:w-auto bg-blue-500 text-white py-2 px-6 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                Update All Workers / עדכן את כל העובדים
-                            </button>
-                        </div>
                     </form>
-                    <div class="mt-4 text-sm text-gray-500">
+                    <form id="removeWorkerForm" method="POST" style="display: none;">
+                        <input type="hidden" name="action" value="remove_worker">
+                        <input type="hidden" name="worker_name" id="worker_name_to_remove">
+                    </form>
+                    <div class="mt-4 text-sm text-gray-500 text-right">
                         * Empty base wage means using restaurant's default rate / שכר בסיס ריק משמעותו שימוש בתעריף ברירת המחדל של המסעדה
                     </div>
                     {% else %}
-                    <p class="text-gray-500">No workers added yet. / .טרם נוספו עובדים</p>
+                    <p class="text-gray-500 text-right">No workers added yet. / .טרם נוספו עובדים</p>
                     {% endif %}
                 </div>
             </div>
@@ -201,24 +200,25 @@
         visibility: visible;
     }
     
-    /* Add a small arrow to the tooltip */
+    /* Add a small arrow to the tooltip - adjusted for RTL */
     .group-hover\:visible::before {
         content: '';
         position: absolute;
-        left: -6px;
+        right: -6px;
         top: 10px;
         width: 0;
         height: 0;
         border-top: 6px solid transparent;
         border-bottom: 6px solid transparent;
-        border-right: 6px solid black;
+        border-left: 6px solid black;
+        border-right: none;
     }
 
     /* Adjust tooltip arrow for mobile */
     @media (max-width: 640px) {
         .group-hover\:visible::before {
             top: -6px;
-            left: 10px;
+            right: 10px;
             border-left: 6px solid transparent;
             border-right: 6px solid transparent;
             border-bottom: 6px solid black;
@@ -226,4 +226,13 @@
         }
     }
 </style>
+
+<script>
+function removeWorker(workerName) {
+    if (confirm('Are you sure you want to remove this worker? / ?האם אתה בטוח שברצונך להסיר עובד זה')) {
+        document.getElementById('worker_name_to_remove').value = workerName;
+        document.getElementById('removeWorkerForm').submit();
+    }
+}
+</script>
 {% endblock %} 

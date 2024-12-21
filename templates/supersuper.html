@@ -1,90 +1,127 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="w-full max-w-6xl mx-auto p-8">
-    <div class="bg-white shadow-lg rounded-lg p-8">
-        <h1 class="text-3xl font-bold mb-8">System Overview / סקירת מערכת</h1>
+<div class="w-full max-w-6xl mx-auto p-4 sm:p-8" dir="rtl">
+    <div class="bg-white shadow-lg rounded-lg p-4 sm:p-8">
+        <h1 class="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">סקירת מערכת / System Overview</h1>
         
         <!-- System Description -->
-        <div class="mb-12">
-            <h2 class="text-2xl font-semibold mb-4">About the System / אודות המערכת</h2>
+        <div class="mb-8 sm:mb-12">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">אודות המערכת / About the System</h2>
             <p class="text-gray-700 mb-4">
-                This is a comprehensive restaurant management system designed to handle tips distribution and work hours tracking.
-                The system supports multiple restaurants with different configurations and layouts.
+                מערכת ניהול שכר במסעדות המיועדת לטיפול בחלוקת טיפים ומעקב אחר שעות עבודה.
+                המערכת תומכת במספר מסעדות עם תצורות ופריסות שונות.
             </p>
-            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+            <div class="bg-yellow-50 border-r-4 border-yellow-400 pr-3 sm:pr-4 mb-4">
                 <p class="text-yellow-700">
-                    <strong>Security Note:</strong> This page should be password protected to restrict access to development and sales team members only.
-                    (Currently not implemented)
+                    <strong>הערת אבטחה:</strong> דף זה צריך להיות מוגן בסיסמה כדי להגביל גישה לחברי צוות הפיתוח והמכירות בלבד.
+                    (טרם מומש)
                 </p>
             </div>
         </div>
 
         <!-- Quick Links -->
-        <div class="mb-12">
-            <h2 class="text-2xl font-semibold mb-4">Quick Links / קישורים מהירים</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <a href="/create-restaurant" class="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100">
-                    <h3 class="font-semibold text-blue-700">Create New Restaurant / יצירת מסעדה חדשה</h3>
-                    <p class="text-sm text-gray-600">Set up a new restaurant with custom configurations</p>
+        <div class="mb-8 sm:mb-12">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">קישורים מהירים / Quick Links</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <a href="/create-restaurant" class="block p-3 sm:p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200 border-2 border-transparent hover:border-blue-200">
+                    <h3 class="font-semibold text-blue-700 flex items-center">
+                        יצירת מסעדה חדשה / Create New Restaurant
+                        <svg class="h-4 w-4 mr-1 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </h3>
+                    <p class="text-sm text-gray-600">הגדרת מסעדה חדשה עם תצורות מותאמות אישית</p>
                 </a>
-                <a href="/select" class="block p-4 bg-green-50 rounded-lg hover:bg-green-100">
-                    <h3 class="font-semibold text-green-700">All Restaurants / כל המסעדות</h3>
-                    <p class="text-sm text-gray-600">View and access all registered restaurants</p>
+                <a href="/select" class="block p-3 sm:p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200 border-2 border-transparent hover:border-green-200">
+                    <h3 class="font-semibold text-green-700 flex items-center">
+                        כל המסעדות / All Restaurants
+                        <svg class="h-4 w-4 mr-1 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </h3>
+                    <p class="text-sm text-gray-600">צפייה וגישה לכל המסעדות הרשומות</p>
                 </a>
             </div>
         </div>
 
         <!-- Example Restaurants -->
-        <div class="mb-12">
-            <h2 class="text-2xl font-semibold mb-4">Example Restaurants / דוגמאות למסעדות</h2>
+        <div class="mb-8 sm:mb-12">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">דוגמאות למסעדות / Example Restaurants</h2>
             
             <!-- Open Restaurant Example -->
             <div class="mb-6">
-                <h3 class="font-semibold text-lg mb-2">Open Layout Example</h3>
-                <a href="/test/" class="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 mb-2">
-                    <span class="font-medium text-blue-700">/test/</span>
-                    <p class="text-sm text-gray-600">Open restaurant with full access to all features</p>
-                </a>
-                <a href="/test/worker-portal" class="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 mb-2">
-                    <span class="font-medium text-blue-700">/test/worker-portal</span>
-                    <p class="text-sm text-gray-600">Worker portal for time tracking and manual hours entry</p>
-                </a>
+                <h3 class="font-semibold text-lg mb-2">דוגמה לתצוגה פתוחה / Open Layout Example</h3>
+                <div class="space-y-2">
+                    <a href="/test/" class="block p-3 sm:p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200 border-2 border-transparent hover:border-blue-200">
+                        <span class="font-medium text-blue-700 flex items-center">
+                            /test/
+                            <svg class="h-4 w-4 mr-1 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                            </svg>
+                        </span>
+                        <p class="text-sm text-gray-600">מסעדה פתוחה עם גישה מלאה לכל התכונות</p>
+                    </a>
+                    <a href="/test/worker-portal" class="block p-3 sm:p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200 border-2 border-transparent hover:border-blue-200">
+                        <span class="font-medium text-blue-700 flex items-center">
+                            /test/worker-portal
+                            <svg class="h-4 w-4 mr-1 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                            </svg>
+                        </span>
+                        <p class="text-sm text-gray-600">פורטל עובדים למעקב זמן והזנת שעות ידנית</p>
+                    </a>
+                </div>
             </div>
 
             <!-- Closed Restaurant with Threshold -->
             <div class="mb-6">
-                <h3 class="font-semibold text-lg mb-2">Closed Layout with Threshold Pay</h3>
+                <h3 class="font-semibold text-lg mb-2">תצוגה סגורה עם סף תשלום / Closed Layout with Threshold Pay</h3>
                 <div class="space-y-2">
-                    <a href="/shapira/" class="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100">
-                        <span class="font-medium text-purple-700">/shapira/</span>
-                        <p class="text-sm text-gray-600">Closed restaurant with threshold-based compensation</p>
+                    <a href="/shapira/" class="block p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors duration-200 border-2 border-transparent hover:border-purple-200">
+                        <span class="font-medium text-purple-700 flex items-center">
+                            /shapira/
+                            <svg class="h-4 w-4 mr-1 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                            </svg>
+                        </span>
+                        <p class="text-sm text-gray-600">מסעדה סגורה עם פיצוי מבוסס סף</p>
                     </a>
-                    <a href="/shapira/bill" class="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100">
-                        <span class="font-medium text-purple-700">/shapira/bill</span>
-                        <p class="text-sm text-gray-600">Bill view for closed restaurant</p>
+                    <a href="/shapira/bill" class="block p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors duration-200 border-2 border-transparent hover:border-purple-200">
+                        <span class="font-medium text-purple-700 flex items-center">
+                            /shapira/bill
+                            <svg class="h-4 w-4 mr-1 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                            </svg>
+                        </span>
+                        <p class="text-sm text-gray-600">תצוגת חשבון למסעדה סגורה</p>
                     </a>
-                    <a href="/shapira/admin" class="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100">
-                        <span class="font-medium text-purple-700">/shapira/admin</span>
-                        <p class="text-sm text-gray-600">Admin configuration panel</p>
+                    <a href="/shapira/admin" class="block p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors duration-200 border-2 border-transparent hover:border-purple-200">
+                        <span class="font-medium text-purple-700 flex items-center">
+                            /shapira/admin
+                            <svg class="h-4 w-4 mr-1 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                            </svg>
+                        </span>
+                        <p class="text-sm text-gray-600">פאנל הגדרות מנהל</p>
                     </a>
                     
                     <!-- Threshold Pay Example -->
-                    <div class="bg-yellow-50 p-4 rounded-lg mt-2">
-                        <h4 class="font-medium text-yellow-800 mb-2">Threshold Pay Example:</h4>
+                    <div class="bg-yellow-50 p-3 sm:p-4 rounded-lg mt-2">
+                        <h4 class="font-medium text-yellow-800 mb-2">דוגמה לתשלום מבוסס סף:</h4>
                         <p class="text-sm text-yellow-700">
-                            With threshold pay (e.g., ₪10/hour threshold):
+                            עם תשלום מבוסס סף (לדוגמה, סף של ₪10 לשעה):
                         </p>
-                        <div class="pl-4 mt-2 space-y-2 text-sm text-yellow-700">
-                            <p><strong>Scenario 1 - Below Threshold:</strong><br>
-                            Worker A works 3 hours and earns ₪24 in tips (₪8/hour).<br>
-                            Since it's below threshold, they get compensated up to minimum wage (₪50/hour).<br>
-                            Compensation = (₪50 - ₪8) × 3 hours = ₪126</p>
+                        <div class="pr-3 sm:pr-4 mt-2 space-y-2 text-sm text-yellow-700">
+                            <p><strong>תרחיש 1 - מתחת לסף:</strong><br>
+                            עובד א' עובד 3 שעות ומרוויח ₪24 בטיפים (₪8 לשעה).<br>
+                            מכיוון שזה מתחת לסף, הוא מקבל השלמה עד לשכר המינימום (₪50 לשעה).<br>
+                            פיצוי = (₪50 - ₪8) × 3 שעות = ₪126</p>
                             
-                            <p><strong>Scenario 2 - Above Threshold:</strong><br>
-                            Worker B works 3 hours and earns ₪36 in tips (₪12/hour).<br>
-                            Since it's above threshold, they get fixed bonus (₪30/hour).<br>
-                            Compensation = ₪30 × 3 hours = ₪90</p>
+                            <p><strong>תרחיש 2 - מעל הסף:</strong><br>
+                            עובד ב' עובד 3 שעות ומרוויח ₪36 בטיפים (₪12 לשעה).<br>
+                            מכיוון שזה מעל הסף, הוא מקבל בונוס קבוע (₪30 לשעה).<br>
+                            פיצוי = ₪30 × 3 שעות = ₪90</p>
                         </div>
                     </div>
                 </div>
@@ -92,25 +129,30 @@
 
             <!-- Additive Pay Restaurant -->
             <div class="mb-6">
-                <h3 class="font-semibold text-lg mb-2">Additive Pay System</h3>
-                <a href="/additive_test/admin" class="block p-4 bg-green-50 rounded-lg hover:bg-green-100">
-                    <span class="font-medium text-green-700">/additive_test/admin</span>
-                    <p class="text-sm text-gray-600">Restaurant with additive pay system</p>
+                <h3 class="font-semibold text-lg mb-2">מערכת תשלום תוספתית / Additive Pay System</h3>
+                <a href="/additive_test/admin" class="block p-3 sm:p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200 border-2 border-transparent hover:border-green-200">
+                    <span class="font-medium text-green-700 flex items-center">
+                        /additive_test/admin
+                        <svg class="h-4 w-4 mr-1 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </span>
+                    <p class="text-sm text-gray-600">מסעדה עם מערכת תשלום תוספתית</p>
                 </a>
                 
                 <!-- Pay System Comparison -->
-                <div class="bg-blue-50 p-4 rounded-lg mt-2">
-                    <h4 class="font-medium text-blue-800 mb-2">Pay System Comparison:</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="bg-blue-50 p-3 sm:p-4 rounded-lg mt-2">
+                    <h4 class="font-medium text-blue-800 mb-2">השוואת מערכות תשלום:</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                         <div>
-                            <h5 class="font-medium text-blue-700">Top-up System:</h5>
-                            <p class="text-blue-600">Ensures minimum wage by compensating the difference if tips are low.<br>
-                            Example: If minimum wage is ₪50/hour and tips are ₪30/hour, worker gets ₪20/hour compensation.</p>
+                            <h5 class="font-medium text-blue-700">מערכת השלמה:</h5>
+                            <p class="text-blue-600">מבטיחה שכר מינימום על ידי השלמת ההפרש אם הטיפים נמוכים.<br>
+                            דוגמה: אם שכר המינימום הוא ₪50 לשעה והטיפים הם ₪30 לשעה, העובד מקבל השלמה של ₪20 לשעה.</p>
                         </div>
                         <div>
-                            <h5 class="font-medium text-blue-700">Additive System:</h5>
-                            <p class="text-blue-600">Adds fixed hourly rate on top of all tips.<br>
-                            Example: With ₪50/hour base rate, worker gets ₪50/hour plus all tips, regardless of tip amount.</p>
+                            <h5 class="font-medium text-blue-700">מערכת תוספתית:</h5>
+                            <p class="text-blue-600">מוסיפה שכר שעתי קבוע מעל כל הטיפים.<br>
+                            דוגמה: עם שכר בסיס של ₪50 לשעה, העובד מקבל ₪50 לשעה בנוסף לכל הטיפים, ללא קשר לסכום הטיפים.</p>
                         </div>
                     </div>
                 </div>
@@ -118,73 +160,73 @@
         </div>
 
         <!-- Core Features -->
-        <div class="mb-12">
-            <h2 class="text-2xl font-semibold mb-4">Core Features / תכונות עיקריות</h2>
+        <div class="mb-8 sm:mb-12">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">תכונות עיקריות / Core Features</h2>
             
-            <div class="space-y-6">
+            <div class="space-y-4 sm:space-y-6">
                 <!-- Restaurant Configuration -->
-                <div class="border-l-4 border-blue-500 pl-4">
-                    <h3 class="font-semibold text-lg mb-2">Restaurant Configuration</h3>
-                    <ul class="list-disc list-inside space-y-2 text-gray-700">
-                        <li>Two layout types: Open (full access) and Closed (restricted access)</li>
-                        <li>Customizable hourly rates with Saturday multiplier option</li>
-                        <li>Flexible tips distribution systems (Standard or Threshold-based)</li>
-                        <li>Worker management with individual wage settings</li>
+                <div class="border-r-4 border-blue-500 pr-3 sm:pr-4">
+                    <h3 class="font-semibold text-lg mb-2">תצורת מסעדה</h3>
+                    <ul class="list-disc list-inside space-y-1 sm:space-y-2 text-gray-700">
+                        <li>שני סוגי תצוגה: פתוח (גישה מלאה) וסגור (גישה מוגבלת)</li>
+                        <li>תעריפים שעתיים מותאמים אישית עם אפשרות למכפיל שבת</li>
+                        <li>מערכות גמישות לחלוקת טיפים (רגיל או מבוסס סף)</li>
+                        <li>ניהול עובדים עם הגדרות שכר אישיות</li>
                     </ul>
                 </div>
 
                 <!-- Tips Management -->
-                <div class="border-l-4 border-green-500 pl-4">
-                    <h3 class="font-semibold text-lg mb-2">Tips Management</h3>
-                    <ul class="list-disc list-inside space-y-2 text-gray-700">
-                        <li>Two compensation types: Round Up and Additive</li>
-                        <li>Tips threshold system for minimum wage guarantee</li>
-                        <li>Individual worker tip participation settings</li>
+                <div class="border-r-4 border-green-500 pr-3 sm:pr-4">
+                    <h3 class="font-semibold text-lg mb-2">ניהול טיפים</h3>
+                    <ul class="list-disc list-inside space-y-1 sm:space-y-2 text-gray-700">
+                        <li>שני סוגי פיצוי: השלמה ותוספתי</li>
+                        <li>מערכת סף טיפים להבטחת שכר מינימום</li>
+                        <li>הגדרות השתתפות בטיפים אישיות לכל עובד</li>
                     </ul>
                 </div>
 
                 <!-- Work Hours -->
-                <div class="border-l-4 border-purple-500 pl-4">
-                    <h3 class="font-semibold text-lg mb-2">Work Hours Tracking</h3>
-                    <ul class="list-disc list-inside space-y-2 text-gray-700">
-                        <li>Daily work hours logging</li>
-                        <li>Special handling for Saturday shifts</li>
-                        <li>Automatic wage calculations based on hours and tips</li>
+                <div class="border-r-4 border-purple-500 pr-3 sm:pr-4">
+                    <h3 class="font-semibold text-lg mb-2">מעקב שעות עבודה</h3>
+                    <ul class="list-disc list-inside space-y-1 sm:space-y-2 text-gray-700">
+                        <li>רישום שעות עבודה יומי</li>
+                        <li>טיפול מיוחד במשמרות שבת</li>
+                        <li>חישובי שכר אוטומטיים על בסיס שעות וטיפים</li>
                     </ul>
                 </div>
             </div>
         </div>
 
         <!-- System Requirements -->
-        <div class="mb-12">
-            <h2 class="text-2xl font-semibold mb-4">System Requirements / דרישות מערכת</h2>
+        <div class="mb-8 sm:mb-12">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">דרישות מערכת / System Requirements</h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <!-- Current Features -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="font-semibold text-lg mb-2">Current Features</h3>
-                    <ul class="list-disc list-inside space-y-2 text-gray-700">
-                        <li>Multi-restaurant support</li>
-                        <li>Bilingual interface (English/Hebrew)</li>
-                        <li>Custom wage configurations</li>
-                        <li>Tips distribution system</li>
+                <div class="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                    <h3 class="font-semibold text-lg mb-2">תכונות קיימות</h3>
+                    <ul class="list-disc list-inside space-y-1 sm:space-y-2 text-gray-700">
+                        <li>תמיכה במספר מסעדות</li>
+                        <li>ממשק דו-לשוני (עברית/אנגלית)</li>
+                        <li>תצורות שכר מותאמות אישית</li>
+                        <li>מערכת חלוקת טיפים</li>
                     </ul>
                 </div>
 
                 <!-- Needed Features -->
-                <div class="bg-red-50 p-4 rounded-lg">
-                    <h3 class="font-semibold text-lg mb-2">Needed Features</h3>
-                    <ul class="list-disc list-inside space-y-2 text-red-700">
-                        <li>System access logs and audit trails</li>
-                        <li>Password protection for admin pages</li>
-                        <li>Regular data backups</li>
-                        <li>Activity monitoring and reporting</li>
-                        <li>Comprehensive testing suite:
-                            <ul class="list-circle list-inside ml-4 mt-1 space-y-1 text-sm">
-                                <li>Unit tests for wage calculations</li>
-                                <li>Integration tests for API endpoints</li>
-                                <li>End-to-end testing for critical workflows</li>
-                                <li>Performance testing for large datasets</li>
+                <div class="bg-red-50 p-3 sm:p-4 rounded-lg">
+                    <h3 class="font-semibold text-lg mb-2">תכונות נדרשות</h3>
+                    <ul class="list-disc list-inside space-y-1 sm:space-y-2 text-red-700">
+                        <li>יומני גישה למערכת ומעקב ביקורת</li>
+                        <li>הגנת סיסמה לדפי מנהל</li>
+                        <li>גיבויי נתונים קבועים</li>
+                        <li>ניטור פעילות ודיווח</li>
+                        <li>מערך בדיקות מקיף:
+                            <ul class="list-circle list-inside mr-3 sm:mr-4 mt-1 space-y-1 text-sm">
+                                <li>בדיקות יחידה לחישובי שכר</li>
+                                <li>בדיקות אינטגרציה לנקודות קצה של ה-API</li>
+                                <li>בדיקות קצה-לקצה לתהליכי עבודה קריטיים</li>
+                                <li>בדיקות ביצועים למסדי נתונים גדולים</li>
                             </ul>
                         </li>
                     </ul>
@@ -193,34 +235,46 @@
         </div>
 
         <!-- Technical Details -->
-        <div class="mb-12">
-            <h2 class="text-2xl font-semibold mb-4">Technical Details / פרטים טכניים</h2>
-            <div class="bg-gray-50 p-6 rounded-lg">
-                <ul class="space-y-3 text-gray-700">
-                    <li><strong>Database:</strong> MongoDB (stores restaurant configs, workers, wages, tips)</li>
-                    <li><strong>Backend:</strong> Python Flask application</li>
-                    <li><strong>Frontend:</strong> HTML templates with Tailwind CSS</li>
-                    <li><strong>API Endpoints:</strong> Available for tips entry and data retrieval</li>
+        <div class="mb-8 sm:mb-12">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">פרטים טכניים / Technical Details</h2>
+            <div class="bg-gray-50 p-4 sm:p-6 rounded-lg">
+                <ul class="space-y-2 sm:space-y-3 text-gray-700">
+                    <li><strong>מסד נתונים:</strong> MongoDB (מאחסן תצורות מסעדה, עובדים, שכר, טיפים)</li>
+                    <li><strong>צד שרת:</strong> אפליקציית Python Flask</li>
+                    <li><strong>צד לקוח:</strong> תבניות HTML עם Tailwind CSS</li>
+                    <li><strong>נקודות קצה API:</strong> זמינות להזנת טיפים ואחזור נתונים</li>
                 </ul>
             </div>
         </div>
 
         <!-- Development Notes -->
         <div>
-            <h2 class="text-2xl font-semibold mb-4">Development Notes / הערות פיתוח</h2>
-            <div class="bg-yellow-50 p-6 rounded-lg space-y-4">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">הערות פיתוח / Development Notes</h2>
+            <div class="bg-yellow-50 p-4 sm:p-6 rounded-lg space-y-3 sm:space-y-4">
                 <p class="text-yellow-800">
-                    <strong>Priority Improvements Needed:</strong>
+                    <strong>שיפורים נדרשים בעדיפות גבוהה:</strong>
                 </p>
-                <ul class="list-disc list-inside space-y-2 text-yellow-800">
-                    <li>Implement authentication system for admin access</li>
-                    <li>Add comprehensive logging system</li>
-                    <li>Set up automated backup solutions</li>
-                    <li>Create detailed API documentation</li>
-                    <li>Add data export functionality</li>
+                <ul class="list-disc list-inside space-y-1 sm:space-y-2 text-yellow-800">
+                    <li>יישום מערכת אימות לגישת מנהל</li>
+                    <li>הוספת מערכת תיעוד מקיפה</li>
+                    <li>הגדרת פתרונות גיבוי אוטומטיים</li>
+                    <li>יצירת תיעוד API מפורט</li>
+                    <li>הוספת פונקציונליות ייצוא נתונים</li>
                 </ul>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* RTL list styling fix */
+    [dir="rtl"] ul.list-disc {
+        padding-right: 1.5rem;
+        padding-left: 0;
+    }
+    [dir="rtl"] ul.list-disc > li::before {
+        right: -1.5rem;
+        left: auto;
+    }
+</style>
 {% endblock %} 

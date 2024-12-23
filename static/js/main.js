@@ -701,4 +701,41 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('Error downloading CSV. Please try again.');
       }
     }
+
+    async function submitHours(data) {
+        try {
+            // First check if there's an active shift for this worker
+            const statusResponse = await fetch(`/${restaurantId}/api/worker/status?name=${data.name}`);
+            const status = await statusResponse.json();
+            
+            // If there's an active shift, stop it first
+            if (status.active_shift) {
+                await fetch(`/${restaurantId}/api/worker/clock-out`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: data.name })
+                });
+            }
+
+            // Then submit the manual hours
+            const response = await fetch(`/${restaurantId}/api/tips/AddHours`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to submit hours');
+            }
+
+            if (status.active_shift) {
+                alert('Note: Active shift will be stopped and replaced with this manual entry / שים לב: המשמרת הפעילה תיעצר ותוחלף בדיווח הידני');
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error submitting hours:', error);
+            throw error;
+        }
+    }
   }

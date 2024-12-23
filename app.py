@@ -1023,6 +1023,20 @@ def get_tips_allocation(restaurant_id):
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route('/<restaurant_id>/api/worker/status', methods=['GET'])
+def get_worker_status(restaurant_id):
+    worker_name = request.args.get('name')
+    if not worker_name:
+        return jsonify({"error": "Worker name required"}), 400
+        
+    mongo_service = MongoService.get_instance(restaurant_id)
+    active_shift = mongo_service.get_active_shift(worker_name)
+    
+    return jsonify({
+        "active_shift": bool(active_shift),
+        "shift_details": active_shift
+    })
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)

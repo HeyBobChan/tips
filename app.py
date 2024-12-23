@@ -330,10 +330,10 @@ def admin_page(restaurant_id):
                 
         elif action == 'update_worker_wage':
             worker_name = request.form.get('worker_name')
-            base_wage = request.form.get('base_wage')
-            tip_participation = request.form.get('tip_participation') == 'on'
-            
             if worker_name:
+                base_wage = request.form.get(f'base_wage_{worker_name}')
+                tip_participation = request.form.get(f'tip_participation_{worker_name}') == 'on'
+                
                 wages_collection = mongo_service.db[mongo_service.get_collection_name('worker_wages')]
                 if base_wage and float(base_wage) > 0:
                     # Update or insert worker's wage

@@ -1,0 +1,74 @@
+[
+  {
+    "_id": {
+      "$oid": "67646bac75061efd0213698b"
+    },
+    "restaurant_id": "dama",
+    "compensation_type": "round_up",
+    "min_hourly_rate": {
+      "default": 50,
+      "saturday_multiplier": 1.5
+    },
+    "name": "Dama Restaurant",
+    "layout_type": "open"
+  },
+  {
+    "_id": {
+      "$oid": "67646bac75061efd0213698c"
+    },
+    "restaurant_id": "anan",
+    "compensation_type": "round_up",
+    "min_hourly_rate": 80.0,
+    "name": "Anan Restaurant",
+    "layout_type": "closed"
+  },
+  {
+    "_id": {
+      "$oid": "67646bac75061efd0213698d"
+    },
+    "restaurant_id": "test",
+    "compensation_type": "round_up",
+    "min_hourly_rate": 50.0,
+    "name": "Test Restaurant",
+    "layout_type": "closed"
+  },
+  {
+    "_id": {
+      "$oid": "67646bad75061efd0213698e"
+    },
+    "restaurant_id": "additive_test",
+    "compensation_type": "additive",
+    "min_hourly_rate": 40.0,
+    "name": "Additive Test Restaurant",
+    "layout_type": "closed"
+  },
+  {
+    "_id": {
+      "$oid": "67646bad75061efd0213698f"
+    },
+    "restaurant_id": "shapira",
+    "compensation_type": "round_up",
+    "hidden": true,
+    "min_hourly_rate": {
+      "default": 40.0,
+      "saturday_multiplier": 1.5
+    },
+    "name": "Shapira Restaurant",
+    "tips_threshold": 10.0,
+    "tips_type": "threshold",
+    "layout_type": "closed"
+  },
+  {
+    "_id": {
+      "$oid": "6765658175061efd0213699f"
+    },
+    "restaurant_id": "my-restaurant",
+    "compensation_type": "round_up",
+    "layout_type": "open",
+    "min_hourly_rate": {
+      "default": 60.0,
+      "saturday_multiplier": 1.5
+    },
+    "name": "My Restaurant"
+  }
+]

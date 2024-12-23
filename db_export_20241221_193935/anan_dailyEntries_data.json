@@ -1,0 +1,98 @@
+[
+  {
+    "_id": {
+      "$oid": "674e280cd344d6912f23fb7c"
+    },
+    "date": {
+      "$date": "2024-12-02T00:00:00Z"
+    },
+    "totalHours": 0.0,
+    "totalCashTips": 0.0,
+    "totalCreditTips": 0.0,
+    "employees": [
+      {
+        "name": "\u05e7\u05d5\u05e4\u05d9",
+        "hours": 0.0,
+        "cashTips": 0.0,
+        "creditTips": 0.0,
+        "compensation": 0
+      },
+      {
+        "name": "\u05da\u05d5\u05e7\u05d9",
+        "hours": 2.0,
+        "cashTips": 0.0,
+        "creditTips": 0.0,
+        "compensation": 0
+      },
+      {
+        "name": "\u05e8\u05d5\u05e7\u05d9",
+        "hours": 0.0,
+        "cashTips": 0.0,
+        "creditTips": 0.0,
+        "compensation": 0
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "675007e5a53894f9ba675875"
+    },
+    "date": {
+      "$date": "2024-12-04T00:00:00Z"
+    },
+    "totalHours": 2.6666666666666665,
+    "totalCashTips": 22.0,
+    "totalCreditTips": 36.0,
+    "employees": [
+      {
+        "name": "\u05e8\u05d5\u05e7\u05d9",
+        "hours": 2.6666666666666665,
+        "cashTips": 10.35,
+        "creditTips": 16.94,
+        "compensation": 0
+      },
+      {
+        "name": "\u05d8\u05d5\u05e4\u05d9",
+        "hours": 3.0,
+        "cashTips": 11.65,
+        "creditTips": 19.06,
+        "compensation": 0
+      },
+      {
+        "name": "\u05e2\u05d9\u05d3\u05d5\u05d0",
+        "hours": 0.0,
+        "cashTips": 0,
+        "creditTips": 0
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6752b4256e52f48c1d39037f"
+    },
+    "date": {
+      "$date": "2024-12-07T00:00:00Z"
+    },
+    "totalHours": 2.0,
+    "totalCashTips": 0,
+    "totalCreditTips": 0,
+    "employees": [
+      {
+        "name": "\u05e8\u05d7\u05dc",
+        "hours": 0.0,
+        "cashTips": 0,
+        "creditTips": 0
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6766f36975061efd021369ae"
+    },
+    "date": {
+      "$date": "2024-12-21T00:00:00Z"
+    },
+    "totalCashTips": 20.0,
+    "totalCreditTips": 0.0
+  }
+]

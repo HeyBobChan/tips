@@ -1,0 +1,12 @@
+[
+  {
+    "_id": {
+      "$oid": "67668dac75061efd021369ac"
+    },
+    "date": {
+      "$date": "2024-12-21T00:00:00Z"
+    },
+    "totalCashTips": 45.0,
+    "totalCreditTips": 0.0
+  }
+]

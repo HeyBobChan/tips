@@ -1,0 +1,18 @@
+[
+  {
+    "_id": {
+      "$oid": "676688ee75061efd021369aa"
+    },
+    "worker_name": "\u05e1\u05d1\u05d0",
+    "base_wage": 60.0,
+    "tip_participation": true
+  },
+  {
+    "_id": {
+      "$oid": "6766e0ae75061efd021369ad"
+    },
+    "worker_name": "Test Worker",
+    "base_wage": 50.0,
+    "tip_participation": true
+  }
+]

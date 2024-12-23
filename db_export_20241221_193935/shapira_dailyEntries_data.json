@@ -1,0 +1,140 @@
+[
+  {
+    "_id": {
+      "$oid": "67574a8276c414a9d6f2d26a"
+    },
+    "date": {
+      "$date": "2024-12-09T00:00:00Z"
+    },
+    "totalHours": 6.0,
+    "totalCashTips": 90.0,
+    "totalCreditTips": 3.0,
+    "employees": [
+      {
+        "name": "\u05d9\u05d5\u05e0\u05ea\u05df \u05d1\u05e8\u05d2\u05de\u05df ",
+        "hours": 10.0,
+        "cashTips": 90.0,
+        "creditTips": 3.0,
+        "compensation": 0
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6766889d00918c44db7fd823"
+    },
+    "date": {
+      "$date": "2024-12-21T00:00:00Z"
+    },
+    "totalHours": 3.0,
+    "totalCashTips": 100.0,
+    "totalCreditTips": 500.0,
+    "employees": [
+      {
+        "name": "\u05d1\u05d5\u05d1",
+        "hours": 0.0,
+        "cashTips": 0.0,
+        "creditTips": 0.0,
+        "compensation": 0
+      },
+      {
+        "name": "\u05d9\u05d5\u05e0\u05ea\u05df \u05d1\u05e8\u05d2\u05de\u05df ",
+        "hours": 0.0,
+        "cashTips": 0.0,
+        "creditTips": 0.0,
+        "compensation": 0
+      },
+      {
+        "name": "Test Worker",
+        "hours": 3.0833333333333335,
+        "cashTips": 20.37,
+        "creditTips": 101.87,
+        "compensation": 0
+      },
+      {
+        "name": "\u05d2\u05d0\u05d9\u05d4",
+        "hours": 1.5166666666666666,
+        "cashTips": 10.02,
+        "creditTips": 50.11,
+        "compensation": 0
+      },
+      {
+        "name": "\u05d0\u05d1\u05d9\u05d2\u05d9\u05dc",
+        "hours": 6.533333333333333,
+        "cashTips": 43.17,
+        "creditTips": 215.86,
+        "compensation": 0
+      },
+      {
+        "name": "co",
+        "hours": 4.0,
+        "cashTips": 26.43,
+        "creditTips": 132.16,
+        "compensation": 0
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6766c7762d8952c5dca4d913"
+    },
+    "date": {
+      "$date": "2024-12-20T00:00:00Z"
+    },
+    "totalHours": 6.0,
+    "totalCashTips": 20.0,
+    "totalCreditTips": 40.0,
+    "employees": [
+      {
+        "name": "\u05d9\u05d5\u05e0\u05ea\u05df \u05d1\u05e8\u05d2\u05de\u05df ",
+        "hours": 6.0,
+        "cashTips": 20.0,
+        "creditTips": 40.0,
+        "compensation": 0
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "6766d0cf2d8952c5dca4d915"
+    },
+    "date": {
+      "$date": "2024-12-18T00:00:00Z"
+    },
+    "totalHours": 6.416666666666667,
+    "totalCashTips": 0,
+    "totalCreditTips": 0,
+    "employees": [
+      {
+        "name": "\u05d7\u05d2\u05d9",
+        "hours": 6.416666666666667,
+        "cashTips": 0,
+        "creditTips": 0
+      },
+      {
+        "name": "\u05d2\u05d9\u05dc\u05d9 \u05d2\u05d5\u05d3\u05d9\u05d0\u05e0\u05d5",
+        "hours": 6.2,
+        "cashTips": 0,
+        "creditTips": 0
+      },
+      {
+        "name": "\u05d2\u05d0\u05d9\u05d4",
+        "hours": 6.0,
+        "cashTips": 0,
+        "creditTips": 0
+      },
+      {
+        "name": "\u05e2\u05d3\u05d9",
+        "hours": 6.833333333333333,
+        "cashTips": 0,
+        "creditTips": 0
+      },
+      {
+        "name": "\u05d7\u05e0\u05d5\u05da",
+        "hours": 6.2,
+        "cashTips": 0,
+        "creditTips": 0
+      }
+    ]
+  }
+]

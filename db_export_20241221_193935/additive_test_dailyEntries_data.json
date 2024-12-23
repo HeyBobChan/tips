@@ -1,0 +1,22 @@
+[
+  {
+    "_id": {
+      "$oid": "675371cb4263500292472819"
+    },
+    "date": {
+      "$date": "2024-12-06T00:00:00Z"
+    },
+    "totalHours": 8.0,
+    "totalCashTips": 500.0,
+    "totalCreditTips": 56.0,
+    "employees": [
+      {
+        "name": "\u05d9\u05d5\u05e1\u05d9",
+        "hours": 8.0,
+        "cashTips": 500.0,
+        "creditTips": 56.0,
+        "compensation": 0
+      }
+    ]
+  }
+]

@@ -1,157 +1,136 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="w-full max-w-4xl mx-auto p-4">
-    <div class="bg-white shadow-lg rounded-lg">
+<div class="container">
+    <div class="card">
+        <h1 class="card-header">{{ restaurant.name }}</h1>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button data-view="hours" class="tab active">
+                <span class="hidden md:block w-full">Work Hours / שעות עבודה</span>
+                <span class="md:hidden w-full">
+                    <div class="text-xs font-medium">שעות עבודה</div>
+                    <div class="text-xs">Work Hours</div>
+                </span>
+            </button>
+            <button data-view="tips" class="tab">
+                <span class="hidden md:block w-full">Tips Entry / הכנסת טיפים</span>
+                <span class="md:hidden w-full">
+                    <div class="text-xs font-medium">הכנסת טיפים</div>
+                    <div class="text-xs">Tips Entry</div>
+                </span>
+            </button>
+            <button data-view="allocation" class="tab">
+                <span class="hidden md:block w-full">Tips Allocation / חלוקת ט��פים</span>
+                <span class="md:hidden w-full">
+                    <div class="text-xs font-medium">חלוקת טיפים</div>
+                    <div class="text-xs">Tips Allocation</div>
+                </span>
+            </button>
+        </div>
+        
+        <!-- Content -->
         <div class="p-6">
-            <h1 class="text-2xl font-bold mb-6">{{ restaurant.name }}</h1>
-            
-            <!-- Tabs -->
-            <div class="grid grid-cols-3 border-b">
-                <div class="col-span-1 border-r flex">
-                    <button data-view="hours" class="w-full py-3 px-2 text-center flex flex-col items-center justify-center border-b-2 border-blue-500 text-blue-500">
-                        <span class="hidden md:block w-full">Work Hours / שעות עבודה</span>
-                        <span class="md:hidden w-full">
-                            <div class="text-xs font-medium">שעות עבודה</div>
-                            <div class="text-xs">Work Hours</div>
-                        </span>
-                    </button>
-                </div>
-                <div class="col-span-1 border-r flex">
-                    <button data-view="tips" class="w-full py-3 px-2 text-center flex flex-col items-center justify-center text-gray-500 hover:text-blue-500">
-                        <span class="hidden md:block w-full">Tips Entry / הכנסת טיפים</span>
-                        <span class="md:hidden w-full">
-                            <div class="text-xs font-medium">הכנסת טיפים</div>
-                            <div class="text-xs">Tips Entry</div>
-                        </span>
-                    </button>
-                </div>
-                <div class="col-span-1 flex">
-                    <button data-view="allocation" class="w-full py-3 px-2 text-center flex flex-col items-center justify-center text-gray-500 hover:text-blue-500">
-                        <span class="hidden md:block w-full">Tips Allocation / חלוקת טיפים</span>
-                        <span class="md:hidden w-full">
-                            <div class="text-xs font-medium">חלוקת טיפים</div>
-                            <div class="text-xs">Tips Allocation</div>
-                        </span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Content -->
-            <div class="p-6">
-                <div id="hoursForm" class="space-y-6">
-                    <form class="grid grid-cols-1 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">שם העובד / Name *</label>
-                            <div class="mt-1 grid grid-cols-2 gap-4">
-                                <select id="workerSelect" 
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                    <option value="">-- Select Worker / בחר עובד --</option>
-                                </select>
-                                <div>
-                                    <input type="text" name="name" id="nameInput" required
-                                        placeholder="Or type new name / או הכנס שם חדש"
-                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">תאריך / Date *</label>
-                            <input type="date" name="date" required value="{{ today }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        
+            <div id="hoursForm" class="form-container">
+                <form class="space-y-6">
+                    <div class="form-group">
+                        <label class="form-label">שם העובד / Name *</label>
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">שעות / Hours *</label>
-                                <input type="number" 
-                                    name="hours" 
-                                    required 
-                                    min="0" 
-                                    max="24" 
-                                    step="0.5"
-                                    inputmode="numeric"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">דקות / Minutes</label>
-                                <input type="number" 
-                                    name="minutes" 
-                                    min="0" 
-                                    max="59"
-                                    inputmode="numeric"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            </div>
+                            <select id="workerSelect" class="form-select">
+                                <option value="">-- Select Worker / בחר עובד --</option>
+                            </select>
+                            <input type="text" name="name" id="nameInput" required
+                                placeholder="Or type new name / או הכנס שם חדש"
+                                class="form-input">
                         </div>
-                        
-                        <div>
-                            <button type="submit"
-                                class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                Submit Hours / שלח שעות
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                
-                <div id="tipsForm" class="hidden space-y-4 sm:space-y-6">
-                    <form class="grid grid-cols-1 gap-4 sm:gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">תאריך / Date *</label>
-                            <input type="date" name="date" required value="{{ today }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">סה״כ טיפים במזומן / Total Cash Tips</label>
-                            <input type="number" name="cashTips" min="0" step="0.01"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">סה״כ טיפים באשראי / Total Credit Tips</label>
-                            <input type="number" name="creditTips" min="0" step="0.01"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        
-                        <div>
-                            <button type="submit"
-                                class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                Submit Tips / שלח טיפים
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                
-                <div id="tipsAllocationView" class="hidden space-y-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-semibold">Tips Allocation / חלוקת טיפים</h2>
-                        <input type="date" id="allocationDate" required value="{{ today }}"
-                            class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            onchange="loadTipsAllocation()">
                     </div>
                     
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Worker / עובד</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours / שעות</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cash Tips Share / חלק בטיפים</th>
-                                </tr>
-                            </thead>
-                            <tbody id="allocationTableBody" class="bg-white divide-y divide-gray-200">
-                                <!-- Data will be populated here -->
-                            </tbody>
-                            <tfoot class="bg-gray-50">
-                                <tr>
-                                    <td class="px-6 py-4 font-medium">Total / סה״כ</td>
-                                    <td id="totalHours" class="px-6 py-4"></td>
-                                    <td id="totalCashTips" class="px-6 py-4"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                    <div class="form-group">
+                        <label class="form-label">תאריך / Date *</label>
+                        <input type="date" name="date" required value="{{ today }}" class="form-input">
                     </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">שעות / Hours *</label>
+                            <input type="number" 
+                                name="hours" 
+                                required 
+                                min="0" 
+                                max="24" 
+                                step="0.5"
+                                inputmode="numeric"
+                                class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">דקות / Minutes</label>
+                            <input type="number" 
+                                name="minutes" 
+                                min="0" 
+                                max="59"
+                                inputmode="numeric"
+                                class="form-input">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-full">
+                        Submit Hours / שלח שעות
+                    </button>
+                </form>
+            </div>
+            
+            <div id="tipsForm" class="hidden form-container">
+                <form class="space-y-6">
+                    <div class="form-group">
+                        <label class="form-label">תאריך / Date *</label>
+                        <input type="date" name="date" required value="{{ today }}" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">סה״כ טיפים במזומן / Total Cash Tips</label>
+                        <input type="number" name="cashTips" min="0" step="0.01" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">סה״כ טיפים באשראי / Total Credit Tips</label>
+                        <input type="number" name="creditTips" min="0" step="0.01" class="form-input">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-full">
+                        Submit Tips / שלח טיפים
+                    </button>
+                </form>
+            </div>
+            
+            <div id="tipsAllocationView" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold">Tips Allocation / חלוקת טיפים</h2>
+                    <input type="date" id="allocationDate" required value="{{ today }}"
+                        class="form-input"
+                        onchange="loadTipsAllocation()">
+                </div>
+                
+                <div class="table-container table-responsive">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Worker / עובד</th>
+                                <th>Hours / שעות</th>
+                                <th>Cash Tips Share / חלק בטיפים</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allocationTableBody">
+                            <!-- Data will be populated here -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td class="font-medium">Total / סה״כ</td>
+                                <td id="totalHours"></td>
+                                <td id="totalCashTips"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
         </div>
@@ -210,11 +189,9 @@
             
             // Remove active state from all buttons
             document.querySelectorAll('[data-view]').forEach(btn => {
-                btn.classList.remove('border-b-2', 'border-blue-500', 'text-blue-500');
-                btn.classList.add('text-gray-500', 'hover:text-blue-500');
+                btn.classList.remove('active');
             });
-            this.classList.add('border-b-2', 'border-blue-500', 'text-blue-500');
-            this.classList.remove('text-gray-500', 'hover:text-blue-500');
+            this.classList.add('active');
             
             // Show/hide forms
             document.getElementById('hoursForm').classList.toggle('hidden', view !== 'hours');
@@ -251,12 +228,11 @@
                 throw new Error(errorData.message || 'Failed to submit hours');
             }
 
-            alert('Hours submitted successfully! / !השעות נשלחו בהצלחה');
+            // Clear form and show success message
             this.reset();
-            populateWorkerSelect(); // Refresh worker list after submission
+            alert('Hours submitted successfully');
         } catch (error) {
-            alert('Error submitting hours: ' + error.message);
-            console.error('Error details:', error);
+            alert(error.message);
         }
     });
 
@@ -280,49 +256,50 @@
                 throw new Error(errorData.message || 'Failed to submit tips');
             }
 
-            alert('Tips submitted successfully! / !הטיפים נשלחו בהצלחה');
+            // Clear form and show success message
             this.reset();
+            alert('Tips submitted successfully');
         } catch (error) {
-            alert('Error submitting tips: ' + error.message);
-            console.error('Error details:', error);
+            alert(error.message);
         }
     });
 
-    // Function to load tips allocation data
     async function loadTipsAllocation() {
+        const date = document.getElementById('allocationDate').value;
+        const restaurantId = window.location.pathname.split('/')[1];
+
         try {
-            const date = document.getElementById('allocationDate').value;
-            const restaurantId = window.location.pathname.split('/')[1];
             const response = await fetch(`/${restaurantId}/api/tips/allocation?date=${date}`);
-            
             if (!response.ok) throw new Error('Failed to load allocation data');
             const data = await response.json();
-            
+
             const tbody = document.getElementById('allocationTableBody');
             tbody.innerHTML = '';
-            
+
             let totalHours = 0;
             let totalCashTips = 0;
-            
-            data.workers.forEach(worker => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4">${worker.name}</td>
-                    <td class="px-6 py-4">${worker.hours.toFixed(2)}</td>
-                    <td class="px-6 py-4">₪${worker.cashTipsShare.toFixed(2)}</td>
+
+            data.workers.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.name}</td>
+                    <td>${row.hours}</td>
+                    <td>${row.cashTipsShare}</td>
                 `;
-                tbody.appendChild(row);
-                
-                totalHours += worker.hours;
-                totalCashTips += worker.cashTipsShare;
+                tbody.appendChild(tr);
+
+                totalHours += parseFloat(row.hours) || 0;
+                totalCashTips += parseFloat(row.cashTipsShare) || 0;
             });
-            
-            document.getElementById('totalHours').textContent = totalHours.toFixed(2);
-            document.getElementById('totalCashTips').textContent = `₪${totalCashTips.toFixed(2)}`;
-            
+
+            document.getElementById('totalHours').textContent = data.totalHours;
+            document.getElementById('totalCashTips').textContent = data.totalCashTips;
         } catch (error) {
             console.error('Error loading allocation data:', error);
-            alert('Error loading allocation data: ' + error.message);
+            const tbody = document.getElementById('allocationTableBody');
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-red-500">Error loading data</td></tr>';
+            document.getElementById('totalHours').textContent = '0.00';
+            document.getElementById('totalCashTips').textContent = '0.00';
         }
     }
 </script>

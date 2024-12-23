@@ -1,0 +1,87 @@
+[
+  {
+    "_id": {
+      "$oid": "674e1d98cd0a1db6f80e35eb"
+    },
+    "date": {
+      "$date": "2024-03-14T00:00:00Z"
+    },
+    "totalHours": 20.5,
+    "totalCashTips": 1000,
+    "totalCreditTips": 1500,
+    "employees": [
+      {
+        "name": "\u05d0\u05d9\u05ea\u05d0",
+        "hours": 8.5,
+        "cashTips": 400,
+        "creditTips": 600,
+        "compensation": 0
+      },
+      {
+        "name": "\u05dc\u05e8\u05d4",
+        "hours": 12,
+        "cashTips": 600,
+        "creditTips": 900,
+        "compensation": 0
+      }
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "674e1dbe73628398f4d1f24c"
+    },
+    "date": {
+      "$date": "2024-12-02T00:00:00Z"
+    },
+    "totalCashTips": 25.0,
+    "totalCreditTips": 0.0
+  },
+  {
+    "_id": {
+      "$oid": "674e9b17ead90c1846dd26da"
+    },
+    "date": {
+      "$date": "2024-12-03T00:00:00Z"
+    },
+    "totalHours": 2.0,
+    "totalCashTips": 115.0,
+    "totalCreditTips": 736.0,
+    "employees": [
+      {
+        "name": "\u05d0\u05d9\u05ea\u05d0",
+        "hours": 0.0,
+        "cashTips": 0.0,
+        "creditTips": 0.0,
+        "compensation": 0
+      },
+      {
+        "name": "\u05de\u05ea\u05d9",
+        "hours": 0.0,
+        "cashTips": 0.0,
+        "creditTips": 0.0,
+        "compensation": 0
+      },
+      {
+        "name": "\u05e0\u05d9\u05e6\u05df",
+        "hours": 0.0,
+        "cashTips": 0.0,
+        "creditTips": 0.0,
+        "compensation": 0
+      },
+      {
+        "name": "\u05e2\u05de\u05e8",
+        "hours": 7.0,
+        "cashTips": 53.61,
+        "creditTips": 343.09,
+        "compensation": 0
+      },
+      {
+        "name": "\u05d0\u05d5\u05dc\u05d4",
+        "hours": 8.016666666666667,
+        "cashTips": 61.39,
+        "creditTips": 392.91,
+        "compensation": 0
+      }
+    ]
+  }
+]

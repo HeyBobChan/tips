@@ -1,30 +1,29 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="w-full max-w-6xl mx-auto p-2 sm:p-4" dir="rtl">
-    <div class="bg-white shadow-lg rounded-lg">
+<div class="container">
+    <div class="card">
         <div class="p-3 sm:p-6">
             <h1 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-right">{{ restaurant.name }} - Admin Panel / פאנל ניהול</h1>
             
             <!-- Restaurant Configuration -->
             <div class="mb-6 sm:mb-8">
                 <h2 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-right">Restaurant Configuration / הגדרות מסעדה</h2>
-                <form method="POST" class="space-y-4 sm:space-y-6">
+                <form method="POST" class="form-container">
                     <input type="hidden" name="action" value="update_config">
                     
                     <div class="grid grid-cols-1 gap-4 sm:gap-6">
                         <!-- Layout Configuration -->
-                        <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700 text-right">
+                        <div class="group">
+                            <label class="form-label text-right">
                                 Layout Type / סוג תצוגה
                                 <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
+                            <div class="group-hover:visible">
                                 Open: All features available to everyone.
                                 Closed: Hours and tips input only, summaries available at /restaurant/bill.
                             </div>
-                            <select name="layout_type" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <select name="layout_type" required class="form-select">
                                 <option value="open" {% if restaurant.layout_type == 'open' %}selected{% endif %}>
                                     Open / פתוח
                                 </option>
@@ -34,43 +33,42 @@
                             </select>
                         </div>
 
-                        <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700 text-right">
+                        <div class="group">
+                            <label class="form-label text-right">
                                 Base Hourly Rate / תעריף שעתי בסיסי
                                 <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
+                            <div class="group-hover:visible">
                                 The minimum hourly rate that workers should earn (including tips). If workers earn less than this amount in tips, they will receive compensation to reach this rate.
                             </div>
                             <input type="number" name="min_hourly_rate" required min="0" step="0.01"
                                 value="{{ restaurant.min_hourly_rate.default if restaurant.min_hourly_rate is mapping else restaurant.min_hourly_rate }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                class="form-input">
                         </div>
                         
-                        <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700 text-right">
+                        <div class="group">
+                            <label class="form-label text-right">
                                 Saturday Multiplier / מכפיל שבת
                                 <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
+                            <div class="group-hover:visible">
                                 Multiplies the base hourly rate for Saturdays. For example, a value of 1.5 means workers earn 1.5 times the base rate on Saturdays. Leave empty for no Saturday bonus.
                             </div>
                             <input type="number" name="saturday_multiplier" min="1" step="0.1"
                                 value="{{ restaurant.min_hourly_rate.saturday_multiplier if restaurant.min_hourly_rate is mapping else '' }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                class="form-input">
                         </div>
                         
-                        <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700 text-right">
+                        <div class="group">
+                            <label class="form-label text-right">
                                 Compensation Type / סוג פיצוי
                                 <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
+                            <div class="group-hover:visible">
                                 Round Up: Compensates workers only if their tips are below the minimum rate.
                                 Additive: Always adds the base rate to tips, regardless of tip amount.
                             </div>
-                            <select name="compensation_type" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <select name="compensation_type" required class="form-select">
                                 <option value="round_up" {% if restaurant.compensation_type == 'round_up' %}selected{% endif %}>
                                     Round Up / השלמה
                                 </option>
@@ -80,30 +78,29 @@
                             </select>
                         </div>
                         
-                        <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700 text-right">
+                        <div class="group">
+                            <label class="form-label text-right">
                                 Tips Threshold / סף טיפים
                                 <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
+                            <div class="group-hover:visible">
                                 Used with threshold-based compensation. If tips per hour are below this amount, workers receive compensation up to the base rate. If above, they receive a fixed bonus per hour.
                             </div>
                             <input type="number" name="tips_threshold" min="0" step="0.01"
                                 value="{{ restaurant.tips_threshold if restaurant.tips_threshold else '' }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                class="form-input">
                         </div>
                         
-                        <div class="group relative">
-                            <label class="block text-sm font-medium text-gray-700 text-right">
+                        <div class="group">
+                            <label class="form-label text-right">
                                 Tips Type / סוג טיפים
                                 <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="invisible group-hover:visible absolute z-10 bg-black text-white p-2 rounded text-sm w-64 -top-2 right-0 sm:right-full sm:mr-2 text-right">
+                            <div class="group-hover:visible">
                                 Standard: Uses regular compensation rules based on minimum hourly rate.
                                 Threshold Based: Uses the tips threshold to determine compensation method.
                             </div>
-                            <select name="tips_type"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <select name="tips_type" class="form-select">
                                 <option value="" {% if not restaurant.tips_type %}selected{% endif %}>
                                     Standard / רגיל
                                 </option>
@@ -115,8 +112,7 @@
                     </div>
                     
                     <div>
-                        <button type="submit"
-                            class="w-full sm:w-auto bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <button type="submit" class="btn btn-primary">
                             Update Configuration / עדכן הגדרות
                         </button>
                     </div>
@@ -133,9 +129,8 @@
                     <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-end">
                         <input type="text" name="worker_name" required
                             placeholder="New worker name / שם עובד חדש"
-                            class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-right">
-                        <button type="submit"
-                            class="w-full sm:w-auto bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                            class="form-input text-right">
+                        <button type="submit" class="btn btn-success">
                             Add Worker / הוסף עובד
                         </button>
                     </div>
@@ -151,12 +146,11 @@
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 px-3 sm:px-4 bg-white rounded-md shadow-sm">
                             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
                                 <button type="button"
-                                    class="w-full sm:w-auto text-red-600 hover:text-red-800 focus:outline-none py-1 px-2"
+                                    class="btn btn-danger"
                                     onclick="removeWorker('{{ worker }}')">
                                     Remove / הסר
                                 </button>
-                                <button type="submit"
-                                    class="w-full sm:w-auto bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <button type="submit" class="btn btn-primary">
                                     Update / עדכן
                                 </button>
                                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
@@ -169,7 +163,7 @@
                                     <input type="number" name="base_wage" min="0" step="0.01"
                                         value="{{ worker_wages.get(worker, {}).get('base_wage', '') }}"
                                         placeholder="{{ restaurant.min_hourly_rate.default if restaurant.min_hourly_rate is mapping else restaurant.min_hourly_rate }}"
-                                        class="w-full sm:w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-right">
+                                        class="form-input text-right">
                                     <label class="text-sm text-gray-600">Base Wage / שכר בסיס:</label>
                                 </div>
                                 <input type="hidden" name="worker_name" value="{{ worker }}">
@@ -193,39 +187,6 @@
         </div>
     </div>
 </div>
-
-<style>
-    /* Ensure tooltips stay visible when moving cursor to them */
-    .group:hover .group-hover\:visible {
-        visibility: visible;
-    }
-    
-    /* Add a small arrow to the tooltip - adjusted for RTL */
-    .group-hover\:visible::before {
-        content: '';
-        position: absolute;
-        right: -6px;
-        top: 10px;
-        width: 0;
-        height: 0;
-        border-top: 6px solid transparent;
-        border-bottom: 6px solid transparent;
-        border-left: 6px solid black;
-        border-right: none;
-    }
-
-    /* Adjust tooltip arrow for mobile */
-    @media (max-width: 640px) {
-        .group-hover\:visible::before {
-            top: -6px;
-            right: 10px;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-bottom: 6px solid black;
-            border-top: none;
-        }
-    }
-</style>
 
 <script>
 function removeWorker(workerName) {

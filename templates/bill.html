@@ -1,52 +1,46 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="w-full max-w-6xl mx-auto p-4" dir="rtl">
-    <div class="bg-white shadow-lg rounded-lg">
-        <div class="p-6">
-            <h1 class="text-2xl font-bold mb-6">{{ restaurant.name }} - סיכום חיובים / Billing Summary</h1>
-            
-            <!-- Date Selection -->
-            <div class="mb-8">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">בחר תאריך / Select Date</label>
-                        <input type="date" id="dailyDate" value="{{ today }}"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-                    <button id="downloadDailyCSV" 
-                        class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                        הורד קובץ / Download CSV
-                    </button>
+<div class="container" dir="rtl">
+    <div class="card">
+        <h1 class="card-header">{{ restaurant.name }} - סיכום חיובים / Billing Summary</h1>
+        
+        <!-- Date Selection -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center">
+                <div class="form-group">
+                    <label class="form-label">בחר תאריך / Select Date</label>
+                    <input type="date" id="dailyDate" value="{{ today }}" class="form-input">
                 </div>
+                <button id="downloadDailyCSV" class="btn btn-success">
+                    הורד קובץ / Download CSV
+                </button>
             </div>
-            
-            <!-- Daily Summary -->
-            <div id="dailyData" class="space-y-6">
+        </div>
+        
+        <!-- Daily Summary -->
+        <div id="dailyData" class="space-y-6">
+            <!-- Data will be loaded here -->
+            Loading...
+        </div>
+        
+        <!-- Monthly Summary -->
+        <div class="mt-12">
+            <h2 class="card-header">סיכום חודשי / Monthly Summary</h2>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+                <div class="w-full sm:w-auto form-group">
+                    <label class="form-label">בחר חודש / Select Month</label>
+                    <select id="monthSelect" class="form-select">
+                        <!-- Months will be populated by JavaScript -->
+                    </select>
+                </div>
+                <button id="downloadMonthlyCSV" class="btn btn-success w-full sm:w-auto">
+                    הורד קובץ / Download CSV
+                </button>
+            </div>
+            <div id="monthlyData" class="space-y-6">
                 <!-- Data will be loaded here -->
                 Loading...
-            </div>
-            
-            <!-- Monthly Summary -->
-            <div class="mt-12">
-                <h2 class="text-xl font-semibold mb-4">סיכום חודשי / Monthly Summary</h2>
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
-                    <div class="w-full sm:w-auto">
-                        <label class="block text-sm font-medium text-gray-700">בחר חודש / Select Month</label>
-                        <select id="monthSelect" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <!-- Months will be populated by JavaScript -->
-                        </select>
-                    </div>
-                    <button id="downloadMonthlyCSV" 
-                        class="w-full sm:w-auto bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                        הורד קובץ / Download CSV
-                    </button>
-                </div>
-                <div id="monthlyData" class="space-y-6 -mx-6 sm:mx-0">
-                    <!-- Data will be loaded here -->
-                    Loading...
-                </div>
             </div>
         </div>
     </div>
@@ -127,7 +121,7 @@
         }
     }
     
-    // Copy the rendering functions from main.js
+    // Rendering functions
     function renderDailyData(data) {
         // Ensure data exists with default values
         const safeData = {
@@ -146,153 +140,116 @@
 
         return `
             <div class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-                    <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="summary-grid">
+                    <div class="summary-card">
                         <h3 class="font-semibold text-sm">סה״כ שעות / Total Hours</h3>
                         <p class="text-xl">${safeData.totalHours.toFixed(2)}</p>
                     </div>
-                    <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="summary-card">
                         <h3 class="font-semibold text-sm">Cash Tips / טיפים במזומן</h3>
                         <p class="text-xl">₪${safeData.totalCashTips.toFixed(2)}</p>
                     </div>
-                    <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="summary-card">
                         <h3 class="font-semibold text-sm">Credit Tips / טיפים באשראי</h3>
                         <p class="text-xl">₪${safeData.totalCreditTips.toFixed(2)}</p>
                     </div>
-                    <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="summary-card">
                         <h3 class="font-semibold text-sm">Compensation / השלמה</h3>
                         <p class="text-xl">₪${safeData.compensation.toFixed(2)}</p>
                     </div>
-                    <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="summary-card">
                         <h3 class="font-semibold text-sm">Avg Per Hour / ממוצע לשעה</h3>
                         <p class="text-xl">₪${safeData.avgWagePerHour}</p>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <div class="inline-block min-w-full align-middle">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        עובד / Employee
-                                    </th>
-                                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        שעות / Hours
-                                    </th>
-                                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        מזומן / Cash
-                                    </th>
-                                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        אשראי / Credit
-                                    </th>
-                                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        השלמה / Compensation
-                                    </th>
-                                    <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        סה״כ / Total
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                ${safeData.employees.length > 0 ? 
-                                    safeData.employees.map(emp => `
-                                        <tr>
-                                            <td class="px-3 py-2 whitespace-nowrap text-right text-sm">${emp.name}</td>
-                                            <td class="px-3 py-2 whitespace-nowrap text-right text-sm">${emp.hours.toFixed(2)}</td>
-                                            <td class="px-3 py-2 whitespace-nowrap text-right text-sm">₪${emp.cashTips.toFixed(2)}</td>
-                                            <td class="px-3 py-2 whitespace-nowrap text-right text-sm">₪${emp.creditTips.toFixed(2)}</td>
-                                            <td class="px-3 py-2 whitespace-nowrap text-right text-sm ${emp.compensation > 0 ? 'text-green-600' : ''}">
-                                                ${emp.compensation > 0 ? '+' : ''}₪${emp.compensation.toFixed(2)}
-                                            </td>
-                                            <td class="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">₪${emp.finalTotal.toFixed(2)}</td>
-                                        </tr>
-                                    `).join('')
-                                    : `
-                                        <tr>
-                                            <td colspan="6" class="px-3 py-2 whitespace-nowrap text-center text-sm text-gray-500">
-                                                No data available for this day / אין נתונים ליום זה
-                                            </td>
-                                        </tr>
-                                    `
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="table-container table-responsive">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th>עובד / Employee</th>
+                                <th>שעות / Hours</th>
+                                <th>מזומן / Cash</th>
+                                <th>אשראי / Credit</th>
+                                <th>השלמה / Compensation</th>
+                                <th>סה״כ / Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${safeData.employees.length > 0 ? 
+                                safeData.employees.map(emp => `
+                                    <tr>
+                                        <td>${emp.name}</td>
+                                        <td>${emp.hours.toFixed(2)}</td>
+                                        <td>₪${emp.cashTips.toFixed(2)}</td>
+                                        <td>₪${emp.creditTips.toFixed(2)}</td>
+                                        <td class="${emp.compensation > 0 ? 'text-green-600' : ''}">
+                                            ${emp.compensation > 0 ? '+' : ''}₪${emp.compensation.toFixed(2)}
+                                        </td>
+                                        <td class="font-medium">₪${emp.finalTotal.toFixed(2)}</td>
+                                    </tr>
+                                `).join('')
+                                : `
+                                    <tr>
+                                        <td colspan="6" class="text-center text-gray-500">
+                                            No data available for this day / אין נתונים ליום זה
+                                        </td>
+                                    </tr>
+                                `
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
         `;
     }
 
     function renderMonthlyData(data) {
-        if (!data?.employeeTotals?.length) {
-            return '<div class="text-gray-500 text-center py-4">אין נתונים זמינים / No data available</div>';
+        if (!data || !data.employeeTotals) {
+            return '<div class="text-red-500 text-center py-4">אין נתונים זמינים / No data available</div>';
         }
 
         return `
-            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+            <div class="table-container table-responsive">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th>שם / Name</th>
+                            <th>שעות / Hours</th>
+                            <th>שעות שבת / Saturday Hours</th>
+                            <th>טיפים במזומן / Cash Tips</th>
+                            <th>טיפים באשראי / Credit Tips</th>
+                            <th>השלמה / Compensation</th>
+                            <th>סה״כ / Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.employeeTotals.map(emp => `
                             <tr>
-                                <th scope="col" class="sticky right-0 bg-gray-50 px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    שם / Name
-                                </th>
-                                <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                    שעות / Hours
-                                </th>
-                                <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                    שעות שבת / Saturday Hours
-                                </th>
-                                <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                    טיפים במזומן / Cash Tips
-                                </th>
-                                <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                    טיפים באשראי / Credit Tips
-                                </th>
-                                <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                    השלמה / Compensation
-                                </th>
-                                <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                    ממוצע לשעה / Avg Hourly
-                                </th>
-                                <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                    סה״כ / Total
-                                </th>
+                                <td>${emp.name}</td>
+                                <td>${emp.hours}</td>
+                                <td>${emp.saturday_hours || 0}</td>
+                                <td>₪${emp.cashTips}</td>
+                                <td>₪${emp.creditTips}</td>
+                                <td class="${emp.compensation > 0 ? 'text-green-600' : ''}">
+                                    ${emp.compensation > 0 ? '+' : ''}₪${emp.compensation}
+                                </td>
+                                <td class="font-medium">₪${emp.finalTotal}</td>
                             </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            ${data.employeeTotals.map(emp => `
-                                <tr class="hover:bg-gray-50">
-                                    <td class="sticky right-0 bg-white px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        ${emp.name}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500">
-                                        ${emp.hours.toFixed(2)}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500">
-                                        ${(emp.saturday_hours || 0).toFixed(2)}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500">
-                                        ₪${emp.cashTips.toFixed(2)}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500">
-                                        ₪${emp.creditTips.toFixed(2)}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500">
-                                        ₪${emp.compensation.toFixed(2)}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500">
-                                        ₪${emp.avgHourly.toFixed(2)}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                                        ₪${emp.finalTotal.toFixed(2)}
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
+                        `).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="font-medium">Total / סה״כ</td>
+                            <td>${data.totalHours}</td>
+                            <td>-</td>
+                            <td>₪${data.totalCashTips}</td>
+                            <td>₪${data.totalCreditTips}</td>
+                            <td>₪${data.totalCompensation}</td>
+                            <td class="font-medium">₪${data.totalCashTips + data.totalCreditTips + data.totalCompensation}</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         `;
     }

@@ -1,0 +1,1459 @@
+{
+  "database_name": "tipsManagementDB",
+  "collections": {
+    "workers": {
+      "document_count": 1,
+      "size": 110,
+      "avg_document_size": 110,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "674e1d98cd0a1db6f80e35ea"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "workers[]": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05d0\u05d9\u05ea\u05d0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "test_dailyEntries": {
+      "document_count": 9,
+      "size": 1964,
+      "avg_document_size": 218,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "67588d9477a2fb3086704b29",
+            "6752c209e6e945be06a54108",
+            "6753fcf2426350029247281a",
+            "6755e72f426350029247281b",
+            "6757532bcd832029cb22d69c"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "date": {
+          "types": [
+            "datetime"
+          ],
+          "sample_values": [
+            "2024-12-09 00:00:00",
+            "2024-12-10 00:00:00",
+            "2024-12-06 00:00:00",
+            "2024-12-07 00:00:00",
+            "2024-12-08 00:00:00"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalHours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "11.366666666666667",
+            "2.5",
+            "10.0",
+            "5.533333333333333",
+            "2.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCashTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "85.0",
+            "20.0",
+            "0.0",
+            "340.0",
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCreditTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "500.0",
+            "200.0",
+            "0.0",
+            "1200.0",
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].name": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05de\u05ea\u05d9",
+            "\u05ea\u05e0\u05d9",
+            "T"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].hours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "11.366666666666667",
+            "2.5",
+            "10.0",
+            "5.533333333333333",
+            "2.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].cashTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "85.0",
+            "20.0",
+            "0.0",
+            "170.0",
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].creditTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "500.0",
+            "600.0",
+            "200.0",
+            "0.0",
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].compensation": {
+          "types": [
+            "int"
+          ],
+          "sample_values": [
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "dailyEntries": {
+      "document_count": 3,
+      "size": 976,
+      "avg_document_size": 325,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        },
+        {
+          "name": "date_1",
+          "keys": {
+            "date": 1
+          },
+          "unique": true
+        },
+        {
+          "name": "employees.name_1",
+          "keys": {
+            "employees.name": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "674e1dbe73628398f4d1f24c",
+            "674e9b17ead90c1846dd26da",
+            "674e1d98cd0a1db6f80e35eb"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "date": {
+          "types": [
+            "datetime"
+          ],
+          "sample_values": [
+            "2024-12-03 00:00:00",
+            "2024-12-02 00:00:00",
+            "2024-03-14 00:00:00"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalHours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "20.5",
+            "2.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCashTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "115.0",
+            "25.0",
+            "1000"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCreditTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "0.0",
+            "1500",
+            "736.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].name": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05d0\u05d9\u05ea\u05d0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].hours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "8.5",
+            "0.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].cashTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "0.0",
+            "400"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].creditTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "600",
+            "0.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].compensation": {
+          "types": [
+            "int"
+          ],
+          "sample_values": [
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "anan_workers": {
+      "document_count": 1,
+      "size": 68,
+      "avg_document_size": 68,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "674ea6c0517c603df6d5bfc8"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "workers[]": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05e2\u05d9\u05d3\u05d5\u05d0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "test_activeShifts": {
+      "document_count": 1,
+      "size": 69,
+      "avg_document_size": 69,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "6766e460c79aaa6699602358"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "name": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05de\u05ea\u05d9"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "start_time": {
+          "types": [
+            "datetime"
+          ],
+          "sample_values": [
+            "2024-12-21 15:53:04.193000"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "end_time": {
+          "types": [
+            "NoneType"
+          ],
+          "sample_values": [
+            "None"
+          ],
+          "null_count": 1,
+          "empty_count": 0
+        }
+      }
+    },
+    "shapira_dailyEntries": {
+      "document_count": 4,
+      "size": 1668,
+      "avg_document_size": 417,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "67574a8276c414a9d6f2d26a",
+            "6766c7762d8952c5dca4d913",
+            "6766d0cf2d8952c5dca4d915",
+            "6766889d00918c44db7fd823"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "date": {
+          "types": [
+            "datetime"
+          ],
+          "sample_values": [
+            "2024-12-21 00:00:00",
+            "2024-12-09 00:00:00",
+            "2024-12-18 00:00:00",
+            "2024-12-20 00:00:00"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalHours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "6.0",
+            "3.0",
+            "6.416666666666667"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCashTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "100.0",
+            "20.0",
+            "90.0",
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCreditTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "500.0",
+            "3.0",
+            "0",
+            "40.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].name": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05d7\u05d2\u05d9",
+            "\u05d1\u05d5\u05d1",
+            "\u05d9\u05d5\u05e0\u05ea\u05df \u05d1\u05e8\u05d2\u05de\u05df "
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].hours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "6.0",
+            "10.0",
+            "0.0",
+            "6.416666666666667"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].cashTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "20.0",
+            "0.0",
+            "90.0",
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].creditTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "3.0",
+            "0.0",
+            "0",
+            "40.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].compensation": {
+          "types": [
+            "int"
+          ],
+          "sample_values": [
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "dama_workers": {
+      "document_count": 1,
+      "size": 197,
+      "avg_document_size": 197,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "674ea6be517c603df6d5bfc6"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "workers[]": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05d0\u05d9\u05ea\u05d0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "additive_test_workers": {
+      "document_count": 1,
+      "size": 36,
+      "avg_document_size": 36,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "675371cb73628398f4d1f280"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "my-restaurant_dailyEntries": {
+      "document_count": 1,
+      "size": 84,
+      "avg_document_size": 84,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "67668dac75061efd021369ac"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "date": {
+          "types": [
+            "datetime"
+          ],
+          "sample_values": [
+            "2024-12-21 00:00:00"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCashTips": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "45.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCreditTips": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "0.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "shapira_workers": {
+      "document_count": 1,
+      "size": 279,
+      "avg_document_size": 279,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "67574025e33136e3ab3f2bf8"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "workers[]": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "Test Worker"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "anan_dailyEntries": {
+      "document_count": 4,
+      "size": 1070,
+      "avg_document_size": 267,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "675007e5a53894f9ba675875",
+            "6752b4256e52f48c1d39037f",
+            "6766f36975061efd021369ae",
+            "674e280cd344d6912f23fb7c"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "date": {
+          "types": [
+            "datetime"
+          ],
+          "sample_values": [
+            "2024-12-21 00:00:00",
+            "2024-12-04 00:00:00",
+            "2024-12-02 00:00:00",
+            "2024-12-07 00:00:00"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalHours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "2.6666666666666665",
+            "0.0",
+            "2.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCashTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "20.0",
+            "0.0",
+            "0",
+            "22.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCreditTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "0.0",
+            "36.0",
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].name": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05e7\u05d5\u05e4\u05d9",
+            "\u05e8\u05d5\u05e7\u05d9",
+            "\u05e8\u05d7\u05dc"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].hours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "2.6666666666666665",
+            "0.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].cashTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "10.35",
+            "0.0",
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].creditTips": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "16.94",
+            "0.0",
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].compensation": {
+          "types": [
+            "int"
+          ],
+          "sample_values": [
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "shapira_worker_wages": {
+      "document_count": 2,
+      "size": 175,
+      "avg_document_size": 87,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "6766e0ae75061efd021369ad",
+            "676688ee75061efd021369aa"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "worker_name": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05e1\u05d1\u05d0",
+            "Test Worker"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "base_wage": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "60.0",
+            "50.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "tip_participation": {
+          "types": [
+            "bool"
+          ],
+          "sample_values": [
+            "True"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "test_workers": {
+      "document_count": 1,
+      "size": 73,
+      "avg_document_size": 73,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "6751ed57863e349bc62d8d9e"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "workers[]": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05de\u05ea\u05d9"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "dama_dailyEntries": {
+      "document_count": 20,
+      "size": 7408,
+      "avg_document_size": 370,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "674f347dcac5f8e7dd85b778",
+            "6752b590e6e945be06a54106",
+            "674eab01fea37e5b9544076b",
+            "675050e4a53894f9ba675876",
+            "675186dca53894f9ba675877"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "date": {
+          "types": [
+            "datetime"
+          ],
+          "sample_values": [
+            "2024-12-02 00:00:00",
+            "2024-12-03 00:00:00",
+            "2024-12-07 00:00:00",
+            "2024-12-04 00:00:00",
+            "2024-12-05 00:00:00"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalHours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "6.0",
+            "5.766666666666667",
+            "2.5",
+            "7.833333333333333",
+            "2.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCashTips": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "212.0",
+            "0.0",
+            "98.5",
+            "255.0",
+            "131.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCreditTips": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "889.0",
+            "393.0",
+            "484.0",
+            "0.0",
+            "624.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].name": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05d0\u05dc\u05db\u05e1",
+            "\u05d0\u05d9\u05ea\u05d0",
+            "\u05d9\u05d2\u05e8",
+            "\u05dc\u05e8\u05d4",
+            "\u05e2\u05de\u05e8"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].hours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "6.0",
+            "5.766666666666667",
+            "0.0",
+            "7.833333333333333",
+            "4.5"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].cashTips": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "80.34",
+            "262.0",
+            "0.0",
+            "25.11",
+            "131.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].creditTips": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "0.0",
+            "624.0",
+            "1243.0",
+            "183.42",
+            "100.2"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].compensation": {
+          "types": [
+            "int"
+          ],
+          "sample_values": [
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "shapira_activeShifts": {
+      "document_count": 7,
+      "size": 536,
+      "avg_document_size": 76,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "6766a796e19460a6c39c69f8",
+            "6766aa089e4ce92c66628268",
+            "6766a881b43e5290d7c76ba7",
+            "6766a783e19460a6c39c69f7",
+            "6766aa8fab4b3bc46fce1360"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "name": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "Test Worker",
+            "\u05d1\u05d5\u05d1"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "start_time": {
+          "types": [
+            "datetime"
+          ],
+          "sample_values": [
+            "2024-12-21 13:46:23.070000",
+            "2024-12-21 13:33:42.821000",
+            "2024-12-21 13:44:08.997000",
+            "2024-12-21 13:33:23.468000",
+            "2024-12-21 13:37:37.029000"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "end_time": {
+          "types": [
+            "datetime",
+            "NoneType"
+          ],
+          "sample_values": [
+            "2024-12-21 13:33:29.817000",
+            "2024-12-21 13:41:53.074000",
+            "2024-12-21 13:49:55.726000",
+            "2024-12-21 13:45:13.714000",
+            "2024-12-21 13:33:46.760000"
+          ],
+          "null_count": 1,
+          "empty_count": 0
+        }
+      }
+    },
+    "restaurants": {
+      "document_count": 6,
+      "size": 1128,
+      "avg_document_size": 188,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        },
+        {
+          "name": "restaurant_id_1",
+          "keys": {
+            "restaurant_id": 1
+          },
+          "unique": true
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "67646bac75061efd0213698b",
+            "67646bac75061efd0213698c",
+            "67646bac75061efd0213698d",
+            "67646bad75061efd0213698e",
+            "67646bad75061efd0213698f"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "restaurant_id": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "dama",
+            "test",
+            "anan",
+            "shapira",
+            "additive_test"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "compensation_type": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "additive",
+            "round_up"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "min_hourly_rate.default": {
+          "types": [
+            "float",
+            "int"
+          ],
+          "sample_values": [
+            "40.0",
+            "60.0",
+            "50"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "min_hourly_rate.saturday_multiplier": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "1.5"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "name": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "Test Restaurant",
+            "Additive Test Restaurant",
+            "Anan Restaurant",
+            "Dama Restaurant",
+            "Shapira Restaurant"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "layout_type": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "closed",
+            "open"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "min_hourly_rate": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "80.0",
+            "40.0",
+            "50.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "hidden": {
+          "types": [
+            "bool"
+          ],
+          "sample_values": [
+            "True"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "tips_threshold": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "10.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "tips_type": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "threshold"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    },
+    "additive_test_dailyEntries": {
+      "document_count": 1,
+      "size": 218,
+      "avg_document_size": 218,
+      "indexes": [
+        {
+          "name": "_id_",
+          "keys": {
+            "_id": 1
+          },
+          "unique": false
+        }
+      ],
+      "field_analysis": {
+        "_id": {
+          "types": [
+            "ObjectId"
+          ],
+          "sample_values": [
+            "675371cb4263500292472819"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "date": {
+          "types": [
+            "datetime"
+          ],
+          "sample_values": [
+            "2024-12-06 00:00:00"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalHours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "8.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCashTips": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "500.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "totalCreditTips": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "56.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].name": {
+          "types": [
+            "str"
+          ],
+          "sample_values": [
+            "\u05d9\u05d5\u05e1\u05d9"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].hours": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "8.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].cashTips": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "500.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].creditTips": {
+          "types": [
+            "float"
+          ],
+          "sample_values": [
+            "56.0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        },
+        "employees[].compensation": {
+          "types": [
+            "int"
+          ],
+          "sample_values": [
+            "0"
+          ],
+          "null_count": 0,
+          "empty_count": 0
+        }
+      }
+    }
+  },
+  "total_size": 16059,
+  "export_time": "2024-12-21T19:39:35.153612"
+}

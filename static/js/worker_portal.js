@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let activeShift = false;
     let startTime = null;
     let updateTimer = null;
+    let autoLogoutTimer = null;
     
     // Initialize
     loadWorkers();
@@ -14,6 +15,26 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('clockOutBtn')?.addEventListener('click', handleClockOut);
     document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
     document.getElementById('manualHoursForm')?.addEventListener('submit', handleManualHours);
+
+    function startAutoLogoutTimer() {
+        if (autoLogoutTimer) {
+            clearTimeout(autoLogoutTimer);
+        }
+        // Calculate milliseconds until 12 hours from now
+        const twelveHoursMs = 12 * 60 * 60 * 1000;
+        autoLogoutTimer = setTimeout(() => {
+            handleClockOut().then(() => {
+                handleLogout();
+            });
+        }, twelveHoursMs);
+    }
+
+    function clearAutoLogoutTimer() {
+        if (autoLogoutTimer) {
+            clearTimeout(autoLogoutTimer);
+            autoLogoutTimer = null;
+        }
+    }
 
     async function loadWorkers() {
         try {
@@ -138,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
             startTime = new Date();
             updateStatus();
             startTimer();
+            startAutoLogoutTimer(); // Set the auto-logout timer
 
             // Then try to record in database (but don't block on failure)
             try {
@@ -156,6 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function handleClockOut() {
         try {
+            clearAutoLogoutTimer(); // Clear the auto-logout timer
             // First check if we have a start time
             if (!startTime) {
                 alert('No active shift found / לא נמצאה משמרת פעילה');

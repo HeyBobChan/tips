@@ -17,12 +17,7 @@
                         <div class="group">
                             <label class="form-label text-right">
                                 Layout Type / סוג תצוגה
-                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="group-hover:visible">
-                                Open: All features available to everyone.
-                                Closed: Hours and tips input only, summaries available at /restaurant/bill.
-                            </div>
                             <select name="layout_type" required class="form-select">
                                 <option value="open" {% if restaurant.layout_type == 'open' %}selected{% endif %}>
                                     Open / פתוח
@@ -36,11 +31,7 @@
                         <div class="group">
                             <label class="form-label text-right">
                                 Base Hourly Rate / תעריף שעתי בסיסי
-                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="group-hover:visible">
-                                The minimum hourly rate that workers should earn (including tips). If workers earn less than this amount in tips, they will receive compensation to reach this rate.
-                            </div>
                             <input type="number" name="min_hourly_rate" required min="0" step="0.01"
                                 value="{{ restaurant.min_hourly_rate.default if restaurant.min_hourly_rate is mapping else restaurant.min_hourly_rate }}"
                                 class="form-input">
@@ -49,11 +40,7 @@
                         <div class="group">
                             <label class="form-label text-right">
                                 Saturday Multiplier / מכפיל שבת
-                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="group-hover:visible">
-                                Multiplies the base hourly rate for Saturdays. For example, a value of 1.5 means workers earn 1.5 times the base rate on Saturdays. Leave empty for no Saturday bonus.
-                            </div>
                             <input type="number" name="saturday_multiplier" min="1" step="0.1"
                                 value="{{ restaurant.min_hourly_rate.saturday_multiplier if restaurant.min_hourly_rate is mapping else '' }}"
                                 class="form-input">
@@ -62,12 +49,7 @@
                         <div class="group">
                             <label class="form-label text-right">
                                 Compensation Type / סוג פיצוי
-                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="group-hover:visible">
-                                Round Up: Compensates workers only if their tips are below the minimum rate.
-                                Additive: Always adds the base rate to tips, regardless of tip amount.
-                            </div>
                             <select name="compensation_type" required class="form-select">
                                 <option value="round_up" {% if restaurant.compensation_type == 'round_up' %}selected{% endif %}>
                                     Round Up / השלמה
@@ -81,11 +63,7 @@
                         <div class="group">
                             <label class="form-label text-right">
                                 Tips Threshold / סף טיפים
-                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="group-hover:visible">
-                                Used with threshold-based compensation. If tips per hour are below this amount, workers receive compensation up to the base rate. If above, they receive a fixed bonus per hour.
-                            </div>
                             <input type="number" name="tips_threshold" min="0" step="0.01"
                                 value="{{ restaurant.tips_threshold if restaurant.tips_threshold else '' }}"
                                 class="form-input">
@@ -94,12 +72,7 @@
                         <div class="group">
                             <label class="form-label text-right">
                                 Tips Type / סוג טיפים
-                                <span class="mr-1 text-gray-400">ℹ️</span>
                             </label>
-                            <div class="group-hover:visible">
-                                Standard: Uses regular compensation rules based on minimum hourly rate.
-                                Threshold Based: Uses the tips threshold to determine compensation method.
-                            </div>
                             <select name="tips_type" class="form-select">
                                 <option value="" {% if not restaurant.tips_type %}selected{% endif %}>
                                     Standard / רגיל

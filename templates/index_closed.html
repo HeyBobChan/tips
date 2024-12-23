@@ -1,9 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
+<div class="container" dir="rtl">
     <div class="card">
         <h1 class="card-header">{{ restaurant.name }}</h1>
+        
+        <!-- Summary Boxes -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50">
+            <div class="p-4 bg-white rounded-lg shadow">
+                <div class="text-sm text-gray-600">סה״כ טיפים / Total Tips</div>
+                <div class="text-xl font-bold" id="summaryTotalTips">₪0.00</div>
+                <div class="text-xs text-gray-500">
+                    <span id="summaryCashTips">₪0.00</span> מזומן / Cash
+                    <br>
+                    <span id="summaryCreditTips">₪0.00</span> אשראי / Credit
+                </div>
+            </div>
+            <div class="p-4 bg-white rounded-lg shadow">
+                <div class="text-sm text-gray-600">סה״כ שעות / Total Hours</div>
+                <div class="text-xl font-bold" id="summaryTotalHours">0</div>
+            </div>
+            <div class="p-4 bg-white rounded-lg shadow">
+                <div class="text-sm text-gray-600">טיפים לשעה / Tips per Hour</div>
+                <div class="text-xl font-bold" id="summaryTipsPerHour">₪0.00</div>
+            </div>
+        </div>
         
         <!-- Tabs -->
         <div class="tabs">
@@ -22,7 +43,7 @@
                 </span>
             </button>
             <button data-view="allocation" class="tab">
-                <span class="hidden md:block w-full">Tips Allocation / חלוקת ט��פים</span>
+                <span class="hidden md:block w-full">Tips Allocation / חלוקת טיפים</span>
                 <span class="md:hidden w-full">
                     <div class="text-xs font-medium">חלוקת טיפים</div>
                     <div class="text-xs">Tips Allocation</div>
@@ -292,14 +313,33 @@
                 totalCashTips += parseFloat(row.cashTipsShare) || 0;
             });
 
+            // Update table totals
             document.getElementById('totalHours').textContent = data.totalHours;
             document.getElementById('totalCashTips').textContent = data.totalCashTips;
+
+            // Update summary boxes
+            const totalTips = (parseFloat(data.totalCashTips) || 0) + (parseFloat(data.totalCreditTips) || 0);
+            document.getElementById('summaryTotalTips').textContent = `₪${totalTips.toFixed(2)}`;
+            document.getElementById('summaryCashTips').textContent = `₪${(parseFloat(data.totalCashTips) || 0).toFixed(2)}`;
+            document.getElementById('summaryCreditTips').textContent = `₪${(parseFloat(data.totalCreditTips) || 0).toFixed(2)}`;
+            document.getElementById('summaryTotalHours').textContent = data.totalHours;
+            const tipsPerHour = data.totalHours > 0 ? (totalTips / data.totalHours).toFixed(2) : '0.00';
+            document.getElementById('summaryTipsPerHour').textContent = `₪${tipsPerHour}`;
         } catch (error) {
             console.error('Error loading allocation data:', error);
             const tbody = document.getElementById('allocationTableBody');
             tbody.innerHTML = '<tr><td colspan="3" class="text-center text-red-500">Error loading data</td></tr>';
+            
+            // Clear totals
             document.getElementById('totalHours').textContent = '0.00';
             document.getElementById('totalCashTips').textContent = '0.00';
+            
+            // Clear summary boxes
+            document.getElementById('summaryTotalTips').textContent = '₪0.00';
+            document.getElementById('summaryCashTips').textContent = '₪0.00';
+            document.getElementById('summaryCreditTips').textContent = '₪0.00';
+            document.getElementById('summaryTotalHours').textContent = '0';
+            document.getElementById('summaryTipsPerHour').textContent = '₪0.00';
         }
     }
 </script>
